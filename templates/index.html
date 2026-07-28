@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نتيجة الثانوية العامة 2026 - استعلام سريع برقم الجلوس</title>
+    <title>نتيجة الثانوية العامة 2026 - استعلام سريع برقم الجلوس والاسم</title>
     <meta name="description" content="موقع الاستعلام السريع عن نتيجة الثانوية العامة 2026 برقم الجلوس أو الاسم بأعلى سرعة واستخراج شهادة النتيجة.">
     
     <!-- Google Fonts -->
@@ -49,14 +49,24 @@
         <!-- Hero Search Section -->
         <section class="search-section">
             <div class="search-card">
-                <div class="badge-tag"><i class="fa-solid fa-bolt"></i> استعلام لحظي مباشر من القاعدة البيانات (919,396 طالب)</div>
+                <div class="badge-tag"><i class="fa-solid fa-bolt"></i> استعلام لحظي مباشر لـ 919,396 طالب وطالبة</div>
                 <h2>ابحث عن نتيجتك الآن</h2>
-                <p class="search-desc">أدخل رقم الجلوس أو اسم الطالب للاستعلام الفوري عن الدرجات والنسبة المئوية</p>
+                <p class="search-desc">اختر نوع البحث ثم أدخل البيانات للوصول إلى النتيجة بالدرجات والنسبة المئوية</p>
+
+                <!-- Search Mode Tabs -->
+                <div class="search-tabs">
+                    <button type="button" class="tab-btn active" data-mode="seating">
+                        <i class="fa-solid fa-id-card"></i> البحث برقم الجلوس
+                    </button>
+                    <button type="button" class="tab-btn" data-mode="name">
+                        <i class="fa-solid fa-user-large"></i> البحث باسم الطالب
+                    </button>
+                </div>
 
                 <form id="searchForm" class="search-box">
                     <div class="input-wrapper">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="أدخل رقم الجلوس (مثال: 2001970) أو اسم الطالب..." autocomplete="off" autofocus required>
+                        <input type="text" id="searchInput" placeholder="أدخل رقم الجلوس (مثال: 2001970)..." autocomplete="off" autofocus required>
                         <button type="button" id="clearBtn" class="clear-btn" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                     <button type="submit" id="submitBtn" class="btn btn-primary btn-search">
@@ -66,35 +76,40 @@
                     </button>
                 </form>
 
-                <!-- Search Suggestions / Quick Tips -->
                 <div class="search-tips">
-                    <span><i class="fa-solid fa-lightbulb"></i> نصيحة:</span>
-                    <span>ابحث برقم الجلوس للحصول على النتيجة بدقة فنائية، أو ابحث بالاسم لعرض قائمة بالطلاب المطابقين.</span>
+                    <span id="tabTipText"><i class="fa-solid fa-lightbulb"></i> النقر على زر رقم الجلوس يُتيح البحث عن النتيجة فورياً بالدرجة الكاملة.</span>
                 </div>
             </div>
         </section>
 
-        <!-- Stats Bar -->
+        <!-- Stats Bar (إحصائيات الدفعة) -->
         <section class="stats-bar">
             <div class="stat-item">
                 <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                 <div class="stat-info">
                     <h3 id="statTotal">919,396</h3>
-                    <p>إجمالي طلاب النظام</p>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon gold"><i class="fa-solid fa-award"></i></div>
-                <div class="stat-info">
-                    <h3>320 درجة</h3>
-                    <p>المجموع الكلي النهائي</p>
+                    <p>إجمالي طلاب الدفعة</p>
                 </div>
             </div>
             <div class="stat-item">
                 <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="stat-info">
-                    <h3 id="statPassRate">--%</h3>
+                    <h3 id="statPassRate">80.15%</h3>
                     <p>نسبة النجاح العامة</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon blue"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <h3 id="statAvgScore">198.9 <small style="font-size:14px; font-weight:normal;">(62.2%)</small></h3>
+                    <p>متوسط مجموع الدفعة</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon gold"><i class="fa-solid fa-award"></i></div>
+                <div class="stat-info">
+                    <h3 id="statMaxScore">320 درجة</h3>
+                    <p>الدرجة النهائية الكلية</p>
                 </div>
             </div>
         </section>
@@ -122,7 +137,7 @@
                             <h3 id="resName">اسم الطالب هنا</h3>
                             <div class="meta-tags">
                                 <span class="tag"><i class="fa-solid fa-id-card"></i> رقم الجلوس: <strong id="resSeatingNo">000000</strong></span>
-                                <span class="tag"><i class="fa-solid fa-book-bookmark"></i> النظام: <strong>الجديد 2026</strong></span>
+                                <span class="tag"><i class="fa-solid fa-book-bookmark"></i> النظام: <strong>الحديث 2026</strong></span>
                             </div>
                         </div>
                     </div>
@@ -162,7 +177,7 @@
             <div id="listResult" class="list-card" style="display: none;">
                 <div class="list-header">
                     <h3><i class="fa-solid fa-list-check"></i> نتائج البحث باسم الطالب (<span id="matchCount">0</span> نتيجة)</h3>
-                    <p>اضغط على أي طالب لعرض بطاقة النتيجة كاملة</p>
+                    <p>اضغط على أية نتيجة لعرض النتيجة الكاملة وبطاقة الطالب</p>
                 </div>
                 <div class="table-responsive">
                     <table class="data-table">
@@ -191,24 +206,14 @@
             </div>
         </section>
 
-        <!-- Top Performers Section -->
+        <!-- Top Performers Section (أوائل الثانوية العامة) -->
         <section id="topStudents" class="top-section">
             <div class="section-title">
-                <h2><i class="fa-solid fa-crown gold-icon"></i> أوائل الجمهورية (نظام حديث 2026)</h2>
-                <p>قائمة بأعلى الدرجات والطلاب المتفوقين بالحصول على المراكز الأولى</p>
+                <h2><i class="fa-solid fa-crown gold-icon"></i> أوائل الثانوية العامة (دفعة 2026)</h2>
+                <p>قائمة بأعلى الطلاب الحاصلين على أعلى المجموعات والنسب المئوية</p>
             </div>
 
             <div class="top-cards-grid" id="topGrid">
-                <!-- Populated by JS -->
-            </div>
-        </section>
-
-        <!-- Recent Searches Section -->
-        <section id="recentSearchesSection" class="recent-section" style="display: none;">
-            <div class="section-title">
-                <h3><i class="fa-solid fa-history"></i> عمليات الاستعلام الأخيرة</h3>
-            </div>
-            <div class="recent-tags" id="recentTagsContainer">
                 <!-- Populated by JS -->
             </div>
         </section>

@@ -6,7 +6,6 @@ import zipfile
 app = Flask(__name__, static_folder='static', template_folder='templates')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Vercel serverless filesystem support (/tmp)
 IS_VERCEL = os.environ.get('VERCEL') == '1' or 'VERCEL' in os.environ
 
 if IS_VERCEL:
@@ -37,13 +36,17 @@ def index():
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('q', '').strip()
+    mode = request.args.get('mode', 'auto').strip() # 'seating', 'name', or 'auto'
+
     if not query:
         return jsonify({'error': 'يرجى كتابة رقم الجلوس أو اسم الطالب'}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    if query.isdigit():
+    is_seating_search = (mode == 'seating') or (mode == 'auto' and query.isdigit())
+
+    if is_seating_search:
         cursor.execute("""
             SELECT seating_no, arabic_name, total_degree 
             FROM stage_new_search 
@@ -57,7 +60,7 @@ def search():
             student['percentage'] = round((student['total_degree'] / 320.0) * 100, 2)
             return jsonify({'type': 'single', 'data': student})
         else:
-            return jsonify({'type': 'single', 'data': None, 'message': 'لم يتم العثور على طالب بهرقم الجلوس المكتوب'}), 404
+            return jsonify({'type': 'single', 'data': None, 'message': f'لم يتم العثور على طالب برقم الجلوس: {query}'}), 404
     else:
         name_query = f"%{query}%"
         cursor.execute("""
@@ -65,7 +68,7 @@ def search():
             FROM stage_new_search 
             WHERE arabic_name LIKE ? 
             ORDER BY total_degree DESC 
-            LIMIT 20
+            LIMIT 30
         """, (name_query,))
         rows = cursor.fetchall()
         conn.close()
@@ -86,7 +89,7 @@ def top_students():
         SELECT seating_no, arabic_name, total_degree 
         FROM stage_new_search 
         ORDER BY total_degree DESC 
-        LIMIT 10
+        LIMIT 15
     """)
     rows = cursor.fetchall()
     conn.close()
@@ -103,18 +106,23 @@ def top_students():
 def stats():
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) as total FROM stage_new_search")
-    total = cursor.fetchone()['total']
+    cursor.execute("SELECT COUNT(*), AVG(total_degree), MAX(total_degree) FROM stage_new_search")
+    total, avg_score, max_score = cursor.fetchone()
     
-    cursor.execute("SELECT COUNT(*) as passed FROM stage_new_search WHERE total_degree >= 160")
-    passed = cursor.fetchone()['passed']
+    cursor.execute("SELECT COUNT(*) FROM stage_new_search WHERE total_degree >= 160")
+    passed = cursor.fetchone()[0]
     conn.close()
+
+    pass_rate = round((passed / total) * 100, 2) if total > 0 else 0
+    avg_score_rounded = round(avg_score, 1) if avg_score else 0
 
     return jsonify({
         'total_students': total,
         'passed_students': passed,
-        'pass_rate': round((passed / total) * 100, 1) if total > 0 else 0,
-        'max_degree': 320
+        'pass_rate': pass_rate,
+        'avg_score': avg_score_rounded,
+        'avg_percent': round((avg_score_rounded / 320.0) * 100, 1),
+        'max_score': max_score or 320
     })
 
 if __name__ == '__main__':

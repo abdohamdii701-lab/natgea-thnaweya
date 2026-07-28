@@ -6,7 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearBtn = document.getElementById('clearBtn');
     const submitBtn = document.getElementById('submitBtn');
     const themeToggle = document.getElementById('themeToggle');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabTipText = document.getElementById('tabTipText');
     
+    let currentMode = 'seating'; // 'seating' or 'name'
+
     // UI Elements
     const resultsSection = document.getElementById('resultsSection');
     const singleResult = document.getElementById('singleResult');
@@ -26,7 +30,25 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchStats();
     fetchTopStudents();
 
-    // Input Input handlers
+    // Tab Switch Handlers
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentMode = btn.dataset.mode;
+
+            if (currentMode === 'seating') {
+                searchInput.placeholder = 'أدخل رقم الجلوس (مثال: 2001970)...';
+                tabTipText.innerHTML = '<i class="fa-solid fa-lightbulb"></i> يتم استعلام رقم الجلوس بدقة عالية وعرض بطاقة النتيجة فورياً.';
+            } else {
+                searchInput.placeholder = 'أدخل اسم الطالب ثلاثي أو رباعي (مثال: احمد محمود)...';
+                tabTipText.innerHTML = '<i class="fa-solid fa-lightbulb"></i> يتيح البحث بالاسم استعراض جميع الأسماء المطابقة مع ترتيب المجموع بالدرجات.';
+            }
+            searchInput.focus();
+        });
+    });
+
+    // Input handlers
     searchInput.addEventListener('input', () => {
         clearBtn.style.display = searchInput.value ? 'block' : 'none';
     });
@@ -43,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const query = searchInput.value.trim();
         if (query) {
-            performSearch(query);
+            performSearch(query, currentMode);
         }
     });
 
@@ -65,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Search Execution
-async function performSearch(query) {
+async function performSearch(query, mode) {
     const submitBtn = document.getElementById('submitBtn');
     const btnText = submitBtn.querySelector('.btn-text');
     const spinner = submitBtn.querySelector('.spinner');
@@ -75,7 +97,7 @@ async function performSearch(query) {
     submitBtn.disabled = true;
 
     try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/search?mode=${mode}&q=${encodeURIComponent(query)}`);
         const result = await response.json();
 
         hideResults();
@@ -93,7 +115,7 @@ async function performSearch(query) {
             showNotFound(result.error || 'حدث خطأ أثناء الاتصال بالسيرفر');
         }
     } catch (err) {
-        showNotFound('تعذر الاتصال بالسيرفر. تأكد من تشغيل الموقع والتصل بالشبكة.');
+        showNotFound('تعذر الاتصال بالسيرفر. تأكد من تشغيل الموقع والاتصال بالشبكة.');
     } finally {
         btnText.style.display = 'inline';
         spinner.style.display = 'none';
@@ -117,7 +139,6 @@ function renderSingleStudent(student) {
     // Grade and Status Calculation
     const percent = student.percentage;
     let gradeText = 'مقبول';
-    let gradeClass = 'gold';
 
     if (percent >= 85) {
         gradeText = 'ممتاز 🌟';
@@ -167,6 +188,7 @@ function renderStudentList(students) {
 
     students.forEach((st, index) => {
         const tr = document.createElement('tr');
+        tr.onclick = () => selectStudent(st.seating_no);
         tr.innerHTML = `
             <td>${index + 1}</td>
             <td><strong>${st.seating_no}</strong></td>
@@ -181,7 +203,7 @@ function renderStudentList(students) {
 
 function selectStudent(seatingNo) {
     document.getElementById('searchInput').value = seatingNo;
-    performSearch(seatingNo);
+    performSearch(seatingNo, 'seating');
 }
 
 function showNotFound(message) {
@@ -198,7 +220,7 @@ function hideResults() {
     notFoundCard.style.display = 'none';
 }
 
-// Fetch Stats
+// Fetch Stats (إحصائيات الدفعة)
 async function fetchStats() {
     try {
         const res = await fetch('/api/stats');
@@ -206,13 +228,15 @@ async function fetchStats() {
         if (data.total_students) {
             document.getElementById('statTotal').textContent = data.total_students.toLocaleString('ar-EG');
             document.getElementById('statPassRate').textContent = `${data.pass_rate}%`;
+            document.getElementById('statAvgScore').innerHTML = `${data.avg_score} <small style="font-size:13px; font-weight:normal; color:var(--text-muted);">(${data.avg_percent}%)</small>`;
+            document.getElementById('statMaxScore').textContent = `${data.max_score} درجة`;
         }
     } catch (e) {
         console.error('Failed to load stats', e);
     }
 }
 
-// Fetch Top Performers
+// Fetch Top Performers (أوائل الجمهورية)
 async function fetchTopStudents() {
     const topGrid = document.getElementById('topGrid');
     try {
