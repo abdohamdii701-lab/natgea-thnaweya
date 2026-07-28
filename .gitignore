@@ -1,6 +1,8 @@
-# Ignore large raw database and extract files (>100MB)
+# Ignore large database files
 *.accdb
 Stage_New_Search.db
+Stage_New_Search_db.zip
+*.zip
 Stage_New_Search_Extracted.csv
 
 # Python
