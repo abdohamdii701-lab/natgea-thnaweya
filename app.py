@@ -5,19 +5,27 @@ import zipfile
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "Stage_New_Search.db")
+
+# Vercel serverless filesystem support (/tmp)
+IS_VERCEL = os.environ.get('VERCEL') == '1' or 'VERCEL' in os.environ
+
+if IS_VERCEL:
+    DB_PATH = "/tmp/Stage_New_Search.db"
+else:
+    DB_PATH = os.path.join(BASE_DIR, "Stage_New_Search.db")
+
 ZIP_PATH = os.path.join(BASE_DIR, "Stage_New_Search_db.zip")
 
 def check_and_extract_db():
     if not os.path.exists(DB_PATH) and os.path.exists(ZIP_PATH):
-        print("Extracting Stage_New_Search.db from Stage_New_Search_db.zip...")
+        print(f"Extracting Stage_New_Search.db to {DB_PATH}...")
+        extract_dir = "/tmp" if IS_VERCEL else BASE_DIR
         with zipfile.ZipFile(ZIP_PATH, 'r') as zip_ref:
-            zip_ref.extractall(BASE_DIR)
+            zip_ref.extractall(extract_dir)
         print("Database extracted successfully!")
 
-check_and_extract_db()
-
 def get_db_connection():
+    check_and_extract_db()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
