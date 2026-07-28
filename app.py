@@ -59,55 +59,57 @@ def search():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    is_seating_search = (mode == 'seating') or (mode == 'auto' and query.isdigit())
-
-    if is_seating_search:
+    # 1. If query contains digits, try exact seating_no search first
+    if query.isdigit():
         cursor.execute("""
             SELECT seating_no, arabic_name, total_degree, student_case_desc 
             FROM stage_new_search 
             WHERE seating_no = ?
         """, (query,))
         row = cursor.fetchone()
-        conn.close()
 
         if row:
             student = dict(row)
             student['percentage'] = round((student['total_degree'] / 320.0) * 100, 2)
-            return jsonify({'type': 'single', 'data': student})
-        else:
-            return jsonify({'type': 'single', 'data': None, 'message': f'لم يتم العثور على طالب برقم الجلوس: {query}'}), 404
-    else:
-        # Bulletproof Fuzzy & Fallback Multi-Token Search
-        raw_tokens = [t for t in query.split() if t]
-        if not raw_tokens:
             conn.close()
-            return jsonify({'type': 'list', 'data': [], 'count': 0})
+            return jsonify({'type': 'single', 'data': student})
 
-        where_clauses = ["(normalized_name LIKE ? OR arabic_name LIKE ?)" for _ in raw_tokens]
-        sql = f"""
-            SELECT seating_no, arabic_name, total_degree, student_case_desc 
-            FROM stage_new_search 
-            WHERE {" AND ".join(where_clauses)}
-            ORDER BY total_degree DESC 
-            LIMIT 30
-        """
-        
-        params = []
-        for t in raw_tokens:
-            norm_t = normalize_arabic(t)
-            params.extend([f"%{norm_t}%", f"%{t}%"])
-
-        cursor.execute(sql, params)
-        rows = cursor.fetchall()
+    # 2. Fallback to tokenized Arabic Name search (handles mistakes smoothly)
+    raw_tokens = [t for t in query.split() if t]
+    if not raw_tokens:
         conn.close()
+        return jsonify({'type': 'list', 'data': [], 'count': 0})
 
-        results = []
-        for r in rows:
-            st = dict(r)
-            st['percentage'] = round((st['total_degree'] / 320.0) * 100, 2)
-            results.append(st)
+    where_clauses = ["(normalized_name LIKE ? OR arabic_name LIKE ?)" for _ in raw_tokens]
+    sql = f"""
+        SELECT seating_no, arabic_name, total_degree, student_case_desc 
+        FROM stage_new_search 
+        WHERE {" AND ".join(where_clauses)}
+        ORDER BY total_degree DESC 
+        LIMIT 30
+    """
+    
+    params = []
+    for t in raw_tokens:
+        norm_t = normalize_arabic(t)
+        params.extend([f"%{norm_t}%", f"%{t}%"])
 
+    cursor.execute(sql, params)
+    rows = cursor.fetchall()
+    conn.close()
+
+    results = []
+    for r in rows:
+        st = dict(r)
+        st['percentage'] = round((st['total_degree'] / 320.0) * 100, 2)
+        results.append(st)
+
+    if len(results) == 1:
+        return jsonify({'type': 'single', 'data': results[0]})
+    elif len(results) > 1:
         return jsonify({'type': 'list', 'data': results, 'count': len(results)})
+    else:
+        return jsonify({'type': 'none', 'data': [], 'message': f'لم نتمكن من العثور على أية نتائج مطابقة للبحث: "{query}"'})
 
 @app.route('/api/top', methods=['GET'])
 def top_students():

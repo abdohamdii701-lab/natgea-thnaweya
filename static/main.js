@@ -103,16 +103,12 @@ async function performSearch(query, mode) {
         hideResults();
         resultsSection.style.display = 'block';
 
-        if (response.ok) {
-            if (result.type === 'single' && result.data) {
-                renderSingleStudent(result.data);
-            } else if (result.type === 'list' && result.data && result.data.length > 0) {
-                renderStudentList(result.data);
-            } else {
-                showNotFound(`لم نتمكن من العثور على أية نتائج مطابقة للبحث: "${query}"`);
-            }
+        if (result.type === 'single' && result.data) {
+            renderSingleStudent(result.data);
+        } else if (result.type === 'list' && result.data && result.data.length > 0) {
+            renderStudentList(result.data);
         } else {
-            showNotFound(result.error || 'حدث خطأ أثناء الاتصال بالسيرفر');
+            showNotFound(result.message || `لم نتمكن من العثور على أية نتائج مطابقة للبحث: "${query}"`);
         }
     } catch (err) {
         showNotFound('تعذر الاتصال بالسيرفر. تأكد من تشغيل الموقع والاتصال بالشبكة.');
@@ -227,7 +223,7 @@ function hideResults() {
     notFoundCard.style.display = 'none';
 }
 
-// Fetch Stats (إحصائيات الدفعة والناجحين)
+// Fetch Stats
 async function fetchStats() {
     try {
         const res = await fetch('/api/stats');
