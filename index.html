@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <script>
+        // Automatic Redirect from Vercel to Cloudflare Pages for 0-CPU unlimited traffic
+        if (window.location.hostname.includes('vercel.app')) {
+            window.location.href = 'https://natgea-thnaweya.abdohamdii701.workers.dev' + window.location.pathname + window.location.search;
+        }
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نتيجة الثانوية العامة 2026 - استعلام سريع برقم الجلوس والاسم</title>
+    <meta name="description" content="موقع الاستعلام السريع عن نتيجة الثانوية العامة 2026 برقم الجلوس أو الاسم بأعلى سرعة واستخراج شهادة النتيجة.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome & Canvas Confetti -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body class="dark-theme">
+    <div class="glow-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <h1>نتيجة الثانوية العامة <span>2026</span></h1>
+                    <p class="subtitle">نظام الاستعلام السريع والإلكتروني الحديث</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="themeToggle" class="icon-btn" title="تبديل المظهر">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <a href="#topStudents" class="btn btn-outline"><i class="fa-solid fa-trophy"></i> الأوائل</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Hero Search Section -->
+        <section class="search-section">
+            <div class="search-card">
+                <div class="badge-tag"><i class="fa-solid fa-bolt"></i> استعلام لحظي مباشر لـ 919,396 طالب وطالبة</div>
+                <h2>ابحث عن نتيجتك الآن</h2>
+                <p class="search-desc">اختر نوع البحث ثم أدخل البيانات للوصول إلى النتيجة بالدرجات والنسبة المئوية</p>
+
+                <!-- Search Mode Tabs -->
+                <div class="search-tabs">
+                    <button type="button" class="tab-btn active" data-mode="seating">
+                        <i class="fa-solid fa-id-card"></i> البحث برقم الجلوس
+                    </button>
+                    <button type="button" class="tab-btn" data-mode="name">
+                        <i class="fa-solid fa-user-large"></i> البحث باسم الطالب
+                    </button>
+                </div>
+
+                <form id="searchForm" class="search-box">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="أدخل رقم الجلوس (مثال: 2001970)..." autocomplete="off" autofocus required>
+                        <button type="button" id="clearBtn" class="clear-btn" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn btn-primary btn-search">
+                        <span class="btn-text">عرض النتيجة</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span class="spinner" style="display: none;"></span>
+                    </button>
+                </form>
+
+                <div class="search-tips">
+                    <span id="tabTipText"><i class="fa-solid fa-lightbulb"></i> النقر على زر رقم الجلوس يُتيح البحث عن النتيجة فورياً بالدرجة الكاملة.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Bar (إحصائيات الدفعة والناجحين) -->
+        <section class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-info">
+                    <h3 id="statTotal">919,396</h3>
+                    <p>إجمالي طلاب الدفعة</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon green"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="stat-info">
+                    <h3 id="statPassRate">80.15%</h3>
+                    <p>نسبة النجاح العامة</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon gold"><i class="fa-solid fa-star"></i></div>
+                <div class="stat-info">
+                    <h3 id="statAvgPassed">221.9 <small style="font-size:13px; font-weight:normal;">(69.4%)</small></h3>
+                    <p>متوسط مجموع الناجحين</p>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon blue"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="stat-info">
+                    <h3 id="statAvgAll">198.9 <small style="font-size:13px; font-weight:normal;">(62.2%)</small></h3>
+                    <p>المتوسط العام للدفعة</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Display Container -->
+        <section id="resultsSection" class="results-section" style="display: none;">
+            <!-- Single Student Result Card -->
+            <div id="singleResult" class="result-card" style="display: none;">
+                <div class="card-header">
+                    <div class="student-status-badge" id="statusBadge">ناجح</div>
+                    <div class="header-tools">
+                        <button onclick="window.print()" class="action-btn" title="طباعة النتيجة"><i class="fa-solid fa-print"></i> طباعة</button>
+                        <button id="shareBtn" class="action-btn" title="مشاركة النتيجة"><i class="fa-solid fa-share-nodes"></i> مشاركة</button>
+                    </div>
+                </div>
+
+                <div class="certificate-body">
+                    <div class="cert-watermark"><i class="fa-solid fa-graduation-cap"></i></div>
+                    
+                    <div class="student-main-info">
+                        <div class="avatar-box">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                        <div class="name-block">
+                            <h3 id="resName">اسم الطالب هنا</h3>
+                            <div class="meta-tags">
+                                <span class="tag"><i class="fa-solid fa-id-card"></i> رقم الجلوس: <strong id="resSeatingNo">000000</strong></span>
+                                <span class="tag"><i class="fa-solid fa-book-bookmark"></i> النظام: <strong>الحديث 2026</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="score-display-grid">
+                        <div class="score-card primary">
+                            <span class="label">المجموع الكلي</span>
+                            <div class="value-row">
+                                <span id="resTotal" class="big-score">000</span>
+                                <span class="max-score">/ 320</span>
+                            </div>
+                        </div>
+
+                        <div class="score-card percentage">
+                            <span class="label">النسبة المئوية</span>
+                            <div class="value-row">
+                                <span id="resPercent" class="big-percent">00.0%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="resProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="score-card grade">
+                            <span class="label">التقدير العام</span>
+                            <div id="resGrade" class="grade-badge">ممتاز</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <p class="timestamp"><i class="fa-solid fa-clock"></i> تم استخراج النتيجة رسمياً من قاعدة البيانات المعتمة</p>
+                </div>
+            </div>
+
+            <!-- List Search Results (For Name Searches) -->
+            <div id="listResult" class="list-card" style="display: none;">
+                <div class="list-header">
+                    <h3><i class="fa-solid fa-list-check"></i> نتائج البحث باسم الطالب (<span id="matchCount">0</span> نتيجة)</h3>
+                    <p>اضغط على أية نتيجة لعرض النتيجة الكاملة وبطاقة الطالب</p>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>رقم الجلوس</th>
+                                <th>اسم الطالب</th>
+                                <th>المجموع (من 320)</th>
+                                <th>النسبة المئوية</th>
+                                <th>عرض</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matchTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Not Found Card -->
+            <div id="notFoundCard" class="error-card" style="display: none;">
+                <div class="error-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                <h3>عفواً، لم نجد نتيجة مطابقة!</h3>
+                <p id="notFoundText">تأكد من كتابة رقم الجلوس أو الاسم بشكل صحيح وأعد المحاولة.</p>
+            </div>
+        </section>
+
+        <!-- Top Performers Section (أوائل الثانوية العامة) -->
+        <section id="topStudents" class="top-section">
+            <div class="section-title">
+                <h2><i class="fa-solid fa-crown gold-icon"></i> أوائل الثانوية العامة (دفعة 2026)</h2>
+                <p>قائمة بأعلى الطلاب الحاصلين على أعلى المجموعات والنسب المئوية</p>
+            </div>
+
+            <div class="top-cards-grid" id="topGrid">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>جميع الحقوق محفوظة &copy; 2026 - نظام استعلام نتيجة الثانوية العامة السريع (Static CDN Engine)</p>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="static/main.js"></script>
+</body>
+</html>

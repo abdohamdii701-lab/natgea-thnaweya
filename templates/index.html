@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <script>
+        // Automatic Redirect from Vercel to Cloudflare Pages for 0-CPU unlimited traffic
+        if (window.location.hostname.includes('vercel.app')) {
+            window.location.href = 'https://natgea-thnaweya.abdohamdii701.workers.dev' + window.location.pathname + window.location.search;
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نتيجة الثانوية العامة 2026 - استعلام سريع برقم الجلوس والاسم</title>
@@ -221,7 +227,7 @@
 
     <footer class="main-footer">
         <div class="container">
-            <p>جميع الحقوق محفوظة &copy; 2026 - نظام استعلام نتيجة الثانوية العامة السريع (SQLite Index Engine)</p>
+            <p>جميع الحقوق محفوظة &copy; 2026 - نظام استعلام نتيجة الثانوية العامة السريع (Static CDN Engine)</p>
         </div>
     </footer>
 
