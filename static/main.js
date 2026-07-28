@@ -227,7 +227,7 @@ function hideResults() {
     notFoundCard.style.display = 'none';
 }
 
-// Fetch Stats
+// Fetch Stats (إحصائيات الدفعة والناجحين)
 async function fetchStats() {
     try {
         const res = await fetch('/api/stats');
@@ -235,8 +235,8 @@ async function fetchStats() {
         if (data.total_students) {
             document.getElementById('statTotal').textContent = data.total_students.toLocaleString('ar-EG');
             document.getElementById('statPassRate').textContent = `${data.pass_rate}%`;
-            document.getElementById('statAvgScore').innerHTML = `${data.avg_score} <small style="font-size:13px; font-weight:normal; color:var(--text-muted);">(${data.avg_percent}%)</small>`;
-            document.getElementById('statMaxScore').textContent = `${data.max_score} درجة`;
+            document.getElementById('statAvgPassed').innerHTML = `${data.avg_passed_score} <small style="font-size:13px; font-weight:normal; color:var(--text-muted);">(${data.avg_passed_percent}%)</small>`;
+            document.getElementById('statAvgAll').innerHTML = `${data.avg_all_score} <small style="font-size:13px; font-weight:normal; color:var(--text-muted);">(${data.avg_all_percent}%)</small>`;
         }
     } catch (e) {
         console.error('Failed to load stats', e);

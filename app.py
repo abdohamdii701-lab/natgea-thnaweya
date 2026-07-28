@@ -107,21 +107,24 @@ def stats():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*), AVG(total_degree), MAX(total_degree) FROM stage_new_search")
-    total, avg_score, max_score = cursor.fetchone()
+    total, avg_all, max_score = cursor.fetchone()
     
-    cursor.execute("SELECT COUNT(*) FROM stage_new_search WHERE total_degree >= 160")
-    passed = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*), AVG(total_degree) FROM stage_new_search WHERE total_degree >= 160")
+    passed_cnt, avg_passed = cursor.fetchone()
     conn.close()
 
-    pass_rate = round((passed / total) * 100, 2) if total > 0 else 0
-    avg_score_rounded = round(avg_score, 1) if avg_score else 0
+    pass_rate = round((passed_cnt / total) * 100, 2) if total > 0 else 0
+    avg_passed_rounded = round(avg_passed, 1) if avg_passed else 0
+    avg_all_rounded = round(avg_all, 1) if avg_all else 0
 
     return jsonify({
         'total_students': total,
-        'passed_students': passed,
+        'passed_students': passed_cnt,
         'pass_rate': pass_rate,
-        'avg_score': avg_score_rounded,
-        'avg_percent': round((avg_score_rounded / 320.0) * 100, 1),
+        'avg_passed_score': avg_passed_rounded,
+        'avg_passed_percent': round((avg_passed_rounded / 320.0) * 100, 1),
+        'avg_all_score': avg_all_rounded,
+        'avg_all_percent': round((avg_all_rounded / 320.0) * 100, 1),
         'max_score': max_score or 320
     })
 
