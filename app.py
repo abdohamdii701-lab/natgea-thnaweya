@@ -36,7 +36,7 @@ def index():
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('q', '').strip()
-    mode = request.args.get('mode', 'auto').strip() # 'seating', 'name', or 'auto'
+    mode = request.args.get('mode', 'auto').strip()
 
     if not query:
         return jsonify({'error': 'يرجى كتابة رقم الجلوس أو اسم الطالب'}), 400
@@ -48,7 +48,7 @@ def search():
 
     if is_seating_search:
         cursor.execute("""
-            SELECT seating_no, arabic_name, total_degree 
+            SELECT seating_no, arabic_name, total_degree, student_case_desc 
             FROM stage_new_search 
             WHERE seating_no = ?
         """, (query,))
@@ -64,7 +64,7 @@ def search():
     else:
         name_query = f"%{query}%"
         cursor.execute("""
-            SELECT seating_no, arabic_name, total_degree 
+            SELECT seating_no, arabic_name, total_degree, student_case_desc 
             FROM stage_new_search 
             WHERE arabic_name LIKE ? 
             ORDER BY total_degree DESC 
@@ -86,7 +86,7 @@ def top_students():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT seating_no, arabic_name, total_degree 
+        SELECT seating_no, arabic_name, total_degree, student_case_desc 
         FROM stage_new_search 
         ORDER BY total_degree DESC 
         LIMIT 15

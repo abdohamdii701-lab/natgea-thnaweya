@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabTipText = document.getElementById('tabTipText');
     
-    let currentMode = 'seating'; // 'seating' or 'name'
+    let currentMode = 'seating';
 
     // UI Elements
     const resultsSection = document.getElementById('resultsSection');
@@ -136,7 +136,25 @@ function renderSingleStudent(student) {
     resPercent.textContent = `${student.percentage}%`;
     resProgressBar.style.width = `${Math.min(student.percentage, 100)}%`;
 
-    // Grade and Status Calculation
+    // Official status description from database
+    const officialStatus = student.student_case_desc || (student.total_degree >= 160 ? 'ناجح دور أول' : 'له دور ثاني');
+    statusBadge.textContent = officialStatus;
+
+    if (officialStatus.includes('ناجح')) {
+        statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+        statusBadge.style.color = '#10b981';
+        statusBadge.style.borderColor = '#10b981';
+    } else if (officialStatus.includes('غياب')) {
+        statusBadge.style.background = 'rgba(100, 116, 139, 0.2)';
+        statusBadge.style.color = '#94a3b8';
+        statusBadge.style.borderColor = '#94a3b8';
+    } else {
+        statusBadge.style.background = 'rgba(239, 68, 68, 0.2)';
+        statusBadge.style.color = '#ef4444';
+        statusBadge.style.borderColor = '#ef4444';
+    }
+
+    // Grade Calculation
     const percent = student.percentage;
     let gradeText = 'مقبول';
 
@@ -153,18 +171,6 @@ function renderSingleStudent(student) {
     }
 
     resGrade.textContent = gradeText;
-
-    if (student.total_degree >= 160) {
-        statusBadge.textContent = 'ناجح ✅';
-        statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
-        statusBadge.style.color = '#10b981';
-        statusBadge.style.borderColor = '#10b981';
-    } else {
-        statusBadge.textContent = 'له دور ثاني ⚠️';
-        statusBadge.style.background = 'rgba(239, 68, 68, 0.2)';
-        statusBadge.style.color = '#ef4444';
-        statusBadge.style.borderColor = '#ef4444';
-    }
 
     // Trigger Confetti for high performers
     if (percent >= 75 && typeof confetti === 'function') {
@@ -189,12 +195,13 @@ function renderStudentList(students) {
     students.forEach((st, index) => {
         const tr = document.createElement('tr');
         tr.onclick = () => selectStudent(st.seating_no);
+        const statusText = st.student_case_desc || (st.total_degree >= 160 ? 'ناجح' : 'دور ثان');
         tr.innerHTML = `
             <td>${index + 1}</td>
             <td><strong>${st.seating_no}</strong></td>
             <td>${st.arabic_name}</td>
             <td>${st.total_degree}</td>
-            <td><span class="badge-percent">${st.percentage}%</span></td>
+            <td><span class="badge-percent">${st.percentage}%</span> (${statusText})</td>
             <td><button class="btn btn-outline btn-sm" onclick="selectStudent('${st.seating_no}')">عرض النتيجة</button></td>
         `;
         matchTableBody.appendChild(tr);
@@ -220,7 +227,7 @@ function hideResults() {
     notFoundCard.style.display = 'none';
 }
 
-// Fetch Stats (إحصائيات الدفعة)
+// Fetch Stats
 async function fetchStats() {
     try {
         const res = await fetch('/api/stats');
@@ -236,7 +243,7 @@ async function fetchStats() {
     }
 }
 
-// Fetch Top Performers (أوائل الجمهورية)
+// Fetch Top Performers
 async function fetchTopStudents() {
     const topGrid = document.getElementById('topGrid');
     try {

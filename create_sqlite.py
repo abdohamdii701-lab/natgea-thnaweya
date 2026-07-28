@@ -23,12 +23,13 @@ def build_sqlite_db():
     CREATE TABLE stage_new_search (
         seating_no TEXT PRIMARY KEY,
         arabic_name TEXT,
-        total_degree REAL
+        total_degree REAL,
+        student_case_desc TEXT
     )
     """)
 
     print("Fetching data from Access and inserting into SQLite...")
-    cursor_access.execute("SELECT seating_no, arabic_name, total_degree FROM Stage_New_Search")
+    cursor_access.execute("SELECT seating_no, arabic_name, total_degree, student_case_desc FROM Stage_New_Search")
 
     batch_size = 50000
     count = 0
@@ -37,7 +38,7 @@ def build_sqlite_db():
         rows = cursor_access.fetchmany(batch_size)
         if not rows:
             break
-        cursor_sqlite.executemany("INSERT INTO stage_new_search VALUES (?, ?, ?)", rows)
+        cursor_sqlite.executemany("INSERT INTO stage_new_search VALUES (?, ?, ?, ?)", rows)
         conn_sqlite.commit()
         count += len(rows)
         print(f"Inserted {count} rows into SQLite...")
