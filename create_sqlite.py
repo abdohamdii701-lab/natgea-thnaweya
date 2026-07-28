@@ -1,7 +1,22 @@
 import sqlite3
 import pyodbc
+import re
 import os
 import time
+
+def normalize_arabic(text):
+    if not text:
+        return ""
+    text = str(text)
+    tashkeel = re.compile(r'[\u0617-\u061A\u064B-\u0652]')
+    text = re.sub(tashkeel, '', text)
+    text = re.sub(r'[أإآٱ]', 'ا', text)
+    text = re.sub(r'ى', 'ي', text)
+    text = re.sub(r'ة', 'ه', text)
+    text = re.sub(r'ؤ', 'و', text)
+    text = re.sub(r'ئ', 'ي', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 def build_sqlite_db():
     start_time = time.time()
@@ -14,7 +29,7 @@ def build_sqlite_db():
     conn_access = pyodbc.connect(conn_str)
     cursor_access = conn_access.cursor()
 
-    print("Creating SQLite database...")
+    print("Creating SQLite database with normalized_name...")
     conn_sqlite = sqlite3.connect(sqlite_db_path)
     cursor_sqlite = conn_sqlite.cursor()
 
@@ -24,7 +39,8 @@ def build_sqlite_db():
         seating_no TEXT PRIMARY KEY,
         arabic_name TEXT,
         total_degree REAL,
-        student_case_desc TEXT
+        student_case_desc TEXT,
+        normalized_name TEXT
     )
     """)
 
@@ -38,13 +54,15 @@ def build_sqlite_db():
         rows = cursor_access.fetchmany(batch_size)
         if not rows:
             break
-        cursor_sqlite.executemany("INSERT INTO stage_new_search VALUES (?, ?, ?, ?)", rows)
+        inserted_rows = [(r[0], r[1], r[2], r[3], normalize_arabic(r[1])) for r in rows]
+        cursor_sqlite.executemany("INSERT INTO stage_new_search VALUES (?, ?, ?, ?, ?)", inserted_rows)
         conn_sqlite.commit()
         count += len(rows)
         print(f"Inserted {count} rows into SQLite...")
 
-    print("Creating index on arabic_name...")
+    print("Creating indexes on seating_no, arabic_name, and normalized_name...")
     cursor_sqlite.execute("CREATE INDEX idx_arabic_name ON stage_new_search(arabic_name)")
+    cursor_sqlite.execute("CREATE INDEX idx_norm_name ON stage_new_search(normalized_name)")
     conn_sqlite.commit()
 
     conn_access.close()

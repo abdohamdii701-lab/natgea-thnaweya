@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import sqlite3
 import os
 import zipfile
+import re
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -14,6 +15,20 @@ else:
     DB_PATH = os.path.join(BASE_DIR, "Stage_New_Search.db")
 
 ZIP_PATH = os.path.join(BASE_DIR, "Stage_New_Search_db.zip")
+
+def normalize_arabic(text):
+    if not text:
+        return ""
+    text = str(text)
+    tashkeel = re.compile(r'[\u0617-\u061A\u064B-\u0652]')
+    text = re.sub(tashkeel, '', text)
+    text = re.sub(r'[أإآٱ]', 'ا', text)
+    text = re.sub(r'ى', 'ي', text)
+    text = re.sub(r'ة', 'ه', text)
+    text = re.sub(r'ؤ', 'و', text)
+    text = re.sub(r'ئ', 'ي', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 def check_and_extract_db():
     if not os.path.exists(DB_PATH) and os.path.exists(ZIP_PATH):
@@ -62,14 +77,25 @@ def search():
         else:
             return jsonify({'type': 'single', 'data': None, 'message': f'لم يتم العثور على طالب برقم الجلوس: {query}'}), 404
     else:
-        name_query = f"%{query}%"
-        cursor.execute("""
+        # Flexible Fuzzy Tokenized Arabic Name Search
+        norm_query = normalize_arabic(query)
+        tokens = [t for t in norm_query.split() if t]
+
+        if not tokens:
+            conn.close()
+            return jsonify({'type': 'list', 'data': [], 'count': 0})
+
+        where_clauses = ["normalized_name LIKE ?" for _ in tokens]
+        sql = f"""
             SELECT seating_no, arabic_name, total_degree, student_case_desc 
             FROM stage_new_search 
-            WHERE arabic_name LIKE ? 
+            WHERE {" AND ".join(where_clauses)}
             ORDER BY total_degree DESC 
             LIMIT 30
-        """, (name_query,))
+        """
+        params = [f"%{t}%" for t in tokens]
+        
+        cursor.execute(sql, params)
         rows = cursor.fetchall()
         conn.close()
 
