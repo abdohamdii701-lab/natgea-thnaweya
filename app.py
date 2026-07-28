@@ -77,15 +77,13 @@ def search():
         else:
             return jsonify({'type': 'single', 'data': None, 'message': f'لم يتم العثور على طالب برقم الجلوس: {query}'}), 404
     else:
-        # Flexible Fuzzy Tokenized Arabic Name Search
-        norm_query = normalize_arabic(query)
-        tokens = [t for t in norm_query.split() if t]
-
-        if not tokens:
+        # Bulletproof Fuzzy & Fallback Multi-Token Search
+        raw_tokens = [t for t in query.split() if t]
+        if not raw_tokens:
             conn.close()
             return jsonify({'type': 'list', 'data': [], 'count': 0})
 
-        where_clauses = ["normalized_name LIKE ?" for _ in tokens]
+        where_clauses = ["(normalized_name LIKE ? OR arabic_name LIKE ?)" for _ in raw_tokens]
         sql = f"""
             SELECT seating_no, arabic_name, total_degree, student_case_desc 
             FROM stage_new_search 
@@ -93,8 +91,12 @@ def search():
             ORDER BY total_degree DESC 
             LIMIT 30
         """
-        params = [f"%{t}%" for t in tokens]
         
+        params = []
+        for t in raw_tokens:
+            norm_t = normalize_arabic(t)
+            params.extend([f"%{norm_t}%", f"%{t}%"])
+
         cursor.execute(sql, params)
         rows = cursor.fetchall()
         conn.close()
