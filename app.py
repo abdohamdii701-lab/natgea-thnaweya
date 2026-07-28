@@ -1,9 +1,21 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template
 import sqlite3
 import os
+import zipfile
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
-DB_PATH = r"e:\natega\Stage_New_Search.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "Stage_New_Search.db")
+ZIP_PATH = os.path.join(BASE_DIR, "Stage_New_Search_db.zip")
+
+def check_and_extract_db():
+    if not os.path.exists(DB_PATH) and os.path.exists(ZIP_PATH):
+        print("Extracting Stage_New_Search.db from Stage_New_Search_db.zip...")
+        with zipfile.ZipFile(ZIP_PATH, 'r') as zip_ref:
+            zip_ref.extractall(BASE_DIR)
+        print("Database extracted successfully!")
+
+check_and_extract_db()
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH)
@@ -24,7 +36,6 @@ def search():
     cursor = conn.cursor()
 
     if query.isdigit():
-        # Search by seating number (exact indexed query)
         cursor.execute("""
             SELECT seating_no, arabic_name, total_degree 
             FROM stage_new_search 
@@ -40,7 +51,6 @@ def search():
         else:
             return jsonify({'type': 'single', 'data': None, 'message': 'لم يتم العثور على طالب بهرقم الجلوس المكتوب'}), 404
     else:
-        # Search by name (LIKE pattern)
         name_query = f"%{query}%"
         cursor.execute("""
             SELECT seating_no, arabic_name, total_degree 

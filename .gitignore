@@ -1,8 +1,7 @@
-# Ignore large database and extract files
+# Ignore large raw database and extract files (>100MB)
 *.accdb
-*.db
-*.sqlite
-*.csv
+Stage_New_Search.db
+Stage_New_Search_Extracted.csv
 
 # Python
 __pycache__/
