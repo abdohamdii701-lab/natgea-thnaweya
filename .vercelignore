@@ -1,9 +1,13 @@
+# Exclude Python runtime files so Vercel builds purely static site
+requirements.txt
+app.py
+create_sqlite.py
+extract_stage_new_search.py
+
+# Exclude large raw database files
 Stage_New_Search_db.zip
 Stage_New_Search.db
 Stage_New_Search_Extracted.csv
-نسخة البحث الدور الأول 2026 - نظام حديث.accdb
 *.accdb
 *.db
 scratch/
-create_sqlite.py
-extract_stage_new_search.py
