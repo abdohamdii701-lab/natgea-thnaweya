@@ -915,47 +915,51 @@ async function renderTansiqPredictor(student) {
                 container.style.display = 'block';
                 const subtextEl = container.querySelector('.tansiq-subtext');
                 if (subtextEl) {
-                    subtextEl.innerText = `محاكاة واقعية لاحتمالية القبول بقطاعات (${trackLabel}) بناءً على التنسيق الرسمي لآخر سنتين (2024 - 2025)`;
+                    subtextEl.innerText = `محاكاة واقعية لاحتمالية القبول بقطاعات (${trackLabel}) بناءً على مؤشرات التنسيق الحكومي لدفعة 2026 (2025 / 2026)`;
                 }
 
                 trackSectors.forEach(sec => {
-                    // Realistic & Conservative Admission Probability Algorithm (2-Year Ministry Data 2024-2025)
+                    const minPctCutoff = sec.proj_min_pct || sec.min_pct;
+                    const maxPctCutoff = sec.max_pct;
+                    const avgPctCutoff = (minPctCutoff + maxPctCutoff) / 2;
+
+                    // Realistic & Conservative Admission Probability Algorithm (2026 Public Universities Indicators)
                     let prob = 50;
                     let probLabel = '🟡 فرصة محتملة';
                     let badgeClass = 'prob-med';
                     let barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
 
-                    if (stPct >= sec.max_pct) {
+                    if (stPct >= maxPctCutoff) {
                         prob = 100;
                         probLabel = '🟢 فرصة مؤكدة 100%';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
-                    } else if (stPct >= sec.avg_pct) {
-                        const ratio = (stPct - sec.avg_pct) / (sec.max_pct - sec.avg_pct || 1);
+                    } else if (stPct >= avgPctCutoff) {
+                        const ratio = (stPct - avgPctCutoff) / (maxPctCutoff - avgPctCutoff || 1);
                         prob = Math.round(80 + ratio * 19);
                         probLabel = '🟢 فرصة قوية جداً';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
-                    } else if (stPct >= sec.min_pct) {
-                        const ratio = (stPct - sec.min_pct) / (sec.avg_pct - sec.min_pct || 1);
+                    } else if (stPct >= minPctCutoff) {
+                        const ratio = (stPct - minPctCutoff) / (avgPctCutoff - minPctCutoff || 1);
                         prob = Math.round(50 + ratio * 24);
                         probLabel = '🟡 فرصة محتملة';
                         badgeClass = 'prob-med';
                         barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
-                    } else if (stPct >= sec.min_pct - 0.75) {
-                        const ratio = (stPct - (sec.min_pct - 0.75)) / 0.75;
+                    } else if (stPct >= minPctCutoff - 0.75) {
+                        const ratio = (stPct - (minPctCutoff - 0.75)) / 0.75;
                         prob = Math.round(25 + ratio * 24);
                         probLabel = '🟠 فرصة حديّة ضئيلة';
                         badgeClass = 'prob-med';
                         barColor = 'linear-gradient(90deg, #f97316, #fb923c)';
-                    } else if (stPct >= sec.min_pct - 2.0) {
-                        const ratio = (stPct - (sec.min_pct - 2.0)) / 1.25;
+                    } else if (stPct >= minPctCutoff - 2.0) {
+                        const ratio = (stPct - (minPctCutoff - 2.0)) / 1.25;
                         prob = Math.round(10 + ratio * 14);
                         probLabel = '🔴 فرصة ضئيلة جداً';
                         badgeClass = 'prob-low';
                         barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
                     } else {
-                        prob = Math.max(2, Math.round(8 - (sec.min_pct - 2.0 - stPct) * 1.5));
+                        prob = Math.max(2, Math.round(8 - (minPctCutoff - 2.0 - stPct) * 1.5));
                         probLabel = '🔴 فرصة شبه معدومة';
                         badgeClass = 'prob-low';
                         barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
@@ -963,6 +967,7 @@ async function renderTansiqPredictor(student) {
 
                     prob = Math.round(prob);
 
+                    const prevMinText = sec.prev_min_pct ? `السنة الماضية: ${sec.prev_min_pct}%` : `الحد الأدنى: ${sec.min_pct}%`;
                     const card = document.createElement('div');
                     card.className = 'tansiq-card';
                     card.innerHTML = `
@@ -974,7 +979,7 @@ async function renderTansiqPredictor(student) {
                             <div class="prob-bar-fill" style="width: ${prob}%; background: ${barColor};"></div>
                         </div>
                         <div class="tcard-meta" style="font-size: 11px; color: var(--text-muted);">
-                            <span>متوسط التنسيق (3 سنوات): <strong>${sec.avg_pct}%</strong> | الحد الأدنى: <strong>${sec.min_pct}%</strong></span>
+                            <span>مؤشر متوقع 2026: <strong style="color:var(--primary);">${minPctCutoff}%</strong> | ${prevMinText}</span>
                         </div>
                     `;
                     grid.appendChild(card);

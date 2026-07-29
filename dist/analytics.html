@@ -417,6 +417,73 @@
         body { background-color: var(--bg-dark); }
         body.dark-analytics { background-color: var(--bg-dark); }
 
+        
+        /* ── Tansiq 2026 Indicators Section ── */
+        .tansiq-2026-section { margin: 3rem 0; }
+        .tansiq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.2rem;
+        }
+        .tansiq-card {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            box-shadow: var(--shadow-subtle);
+            transition: var(--transition);
+            position: relative;
+        }
+        .tansiq-card:hover { transform: translateY(-3px); }
+        .tansiq-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+        }
+        .tansiq-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+        .tansiq-badge-shift {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: rgba(212,163,115,0.15);
+            color: var(--primary);
+            border: 1px solid rgba(212,163,115,0.3);
+        }
+        .tansiq-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 0.5rem 0;
+            padding: 0.65rem 0.8rem;
+            background: rgba(0,0,0,0.15);
+            border-radius: var(--radius-sm);
+        }
+        .tansiq-proj-val {
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+        .tansiq-prev-val {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .tansiq-cap-tag {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
         /* Footer */
         .analytics-footer {
             border-top: 1px solid var(--bg-card-border);
@@ -522,6 +589,31 @@
         <div id="panel-أدبي" class="branch-panel"></div>
 
         <!-- Compare -->
+        
+        <!-- Tansiq 2026 Indicators -->
+        <section class="tansiq-2026-section">
+            <div class="section-title">
+                <span class="st-dot"></span>🎯 مؤشرات التنسيق الحكومي الحسابية لدفعة 2026 (2025 / 2026)
+            </div>
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem;">
+                محسوبة بناءً على مقارنة التوزيع التكراري للطلاب بين عامي 2025 و 2026 والسعة الاستيعابية للجامعات الحكومية المصرية
+            </p>
+
+            <div class="branch-tabs-wrap" style="margin:1rem 0;">
+                <button class="branch-tab active" data-ttrack="science_bio" onclick="switchTansiqTrack('science_bio', this)">
+                    🔬 علمي علوم حكومي
+                </button>
+                <button class="branch-tab" data-ttrack="science_math" onclick="switchTansiqTrack('science_math', this)">
+                    📐 علمي رياضة حكومي
+                </button>
+                <button class="branch-tab" data-ttrack="literary" onclick="switchTansiqTrack('literary', this)">
+                    📚 أدبي حكومي
+                </button>
+            </div>
+
+            <div class="tansiq-grid" id="tansiqGrid2026"></div>
+        </section>
+
         <section class="compare-section">
             <div class="section-title"><span class="st-dot"></span>📊 مقارنة توزيع الدرجات — الشعب الثلاث</div>
             <div class="compare-grid" id="compareGrid"></div>
@@ -1010,6 +1102,57 @@ async function init() {
     }
 }
 
+
+let tansiqData2026 = null;
+
+async function loadTansiq2026() {
+    try {
+        const res = await fetch('static/data/tansiq.json');
+        tansiqData2026 = await res.json();
+        renderTansiqTrack('science_bio');
+    } catch (e) {
+        console.error('Failed to load tansiq2026 data:', e);
+    }
+}
+
+function renderTansiqTrack(track) {
+    if (!tansiqData2026 || !tansiqData2026.sectors) return;
+    const grid = document.getElementById('tansiqGrid2026');
+    if (!grid) return;
+
+    const filtered = tansiqData2026.sectors.filter(s => s.track === track);
+    grid.innerHTML = filtered.map(s => {
+        const shiftText = s.shift < 0 ? `📉 انخفاض متوقع (${s.shift}%)` : `↔️ استقرار متوقع`;
+        return `
+        <div class="tansiq-card">
+            <div class="tansiq-header">
+                <span class="tansiq-title">${s.name}</span>
+                <span class="tansiq-badge-shift">${shiftText}</span>
+            </div>
+            <div class="tansiq-meta">
+                <div>
+                    <div style="font-size:0.75rem;color:var(--text-muted)">الحد الأدنى المتوقع 2026</div>
+                    <div class="tansiq-proj-val">${s.proj_min_pct}% <span style="font-size:0.8rem;font-weight:600">(${s.proj_min_deg} درجة)</span></div>
+                </div>
+                <div style="text-align:left">
+                    <div style="font-size:0.72rem;color:var(--text-muted)">العام الماضي (2025)</div>
+                    <div class="tansiq-prev-val">${s.prev_min_pct}%</div>
+                </div>
+            </div>
+            <div class="tansiq-cap-tag">
+                🏛️ السعة الحكومية التقديرية: <strong>${fmtAr(s.capacity)} طالب</strong>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function switchTansiqTrack(track, btn) {
+    document.querySelectorAll('[data-ttrack]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTansiqTrack(track);
+}
+
+loadTansiq2026();
 init();
 </script>
 </body>
