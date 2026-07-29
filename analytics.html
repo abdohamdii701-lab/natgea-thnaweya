@@ -710,15 +710,8 @@ function drawHistogram(canvas, curveData, rawColor, branchData) {
         ctx.lineWidth = isPeak ? 1.5 : 0.5;
         ctx.stroke();
 
-        if (count > 0 && bH > (isMobile ? 18 : 22)) {
-            ctx.fillStyle = isLight ? 'rgba(30,15,5,0.75)' : 'rgba(255,245,225,0.85)';
-            ctx.font = (isMobile ? 7.5 : 9) + 'px Cairo, sans-serif';
-            ctx.textAlign = 'center';
-            const lbl = count >= 10000 ? Math.round(count/1000) + 'k'
-                      : count >= 1000  ? (count/1000).toFixed(1) + 'k'
-                      : String(count);
-            ctx.fillText(lbl, barX + barW / 2, barY - 3);
-        }
+
+
     });
 
     // 7. Axes
