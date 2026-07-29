@@ -175,6 +175,7 @@ async function selectStudent(seatingNo) {
                     branch_name: st.b,
                     subjects: st.subj || {}
                 });
+                document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
         }
@@ -447,25 +448,55 @@ function renderSubjectBreakdownTable(student) {
 }
 
 // Render Branch Ranking & Interactive Bell Curve Chart
-function renderBranchRankAndBellCurve(student) {
+let ranksDataCache = null;
+
+async function loadRanksData() {
+    if (ranksDataCache) return ranksDataCache;
+    try {
+        const res = await fetch('static/data/ranks.json');
+        if (res.ok) {
+            ranksDataCache = await res.json();
+        }
+    } catch (e) {
+        console.error('Error loading ranks.json:', e);
+    }
+    return ranksDataCache;
+}
+
+// Render Branch Rank & Bell Curve Section
+async function renderBranchRankAndBellCurve(student) {
     const container = document.getElementById('analyticsSection');
     const rankEl = document.getElementById('resBranchRank');
     const countEl = document.getElementById('resBranchTotalCount');
     const pctTextEl = document.getElementById('resPercentileText');
     const pctDescEl = document.getElementById('resPercentileDesc');
 
+    if (!container) return;
     container.style.display = 'block';
 
     const branchName = student.branch_name || student.b || 'عام';
     const totalScore = parseFloat(student.total_degree) || 0;
     const pct = parseFloat(student.percentage) || 0;
 
-    // Estimate or load branch rank
-    let branchTotal = student.branch_total || (branchName.includes('علوم') ? 350000 : (branchName.includes('رياضة') ? 120000 : 410000));
+    // Load exact ranks data (equal scores get equal ranks)
+    const ranks = await loadRanksData();
     let estimatedRank = student.branch_rank;
+    let branchTotal = student.branch_total;
 
+    if (ranks) {
+        const normBranch = branchName.includes('علوم') ? 'علمي علوم' : (branchName.includes('رياض') ? 'علمي رياضة' : (branchName.includes('أدب') || branchName.includes('ادب') ? 'أدبي' : 'علمي علوم'));
+        branchTotal = ranks.totals?.[normBranch] || 540426;
+        
+        const scoreKey = (Math.round(totalScore * 2) / 2).toFixed(1);
+        if (ranks[normBranch] && ranks[normBranch][scoreKey] !== undefined) {
+            estimatedRank = ranks[normBranch][scoreKey];
+        }
+    }
+
+    if (!branchTotal) {
+        branchTotal = branchName.includes('علوم') ? 540426 : (branchName.includes('رياضة') ? 144767 : 214396);
+    }
     if (!estimatedRank) {
-        // Calculate statistical rank based on normal distribution CDF percentile
         const percentileRank = (100 - pct) / 100;
         estimatedRank = Math.max(1, Math.round(percentileRank * branchTotal * 0.85));
     }
@@ -473,7 +504,7 @@ function renderBranchRankAndBellCurve(student) {
     rankEl.textContent = `المركز #${estimatedRank.toLocaleString('ar-EG')}`;
     countEl.textContent = `من أصل ${branchTotal.toLocaleString('ar-EG')} طالب في شعبة ${branchName}`;
 
-    // Top Percentile Calculation (e.g. "أنت من أعلى 4.5% في الشعبة")
+    // Top Percentile Calculation
     const topPercentile = Math.max(0.1, ((estimatedRank / branchTotal) * 100)).toFixed(1);
     pctTextEl.textContent = `من أعلى ${topPercentile}% في الجمهورية`;
 
@@ -487,25 +518,45 @@ function renderBranchRankAndBellCurve(student) {
         pctDescEl.textContent = 'أداء متكافئ ضمن نطاق متوسط الشعبة';
     }
 
-    // Draw Bell Curve Canvas
-    drawBellCurve(pct);
+    // Draw High-DPI Bell Curve Canvas Chart
+    drawBellCurve(pct, `المركز #${estimatedRank.toLocaleString('ar-EG')}`);
 }
 
-// Draw Bell Curve Canvas Chart
-function drawBellCurve(studentPercent) {
+// Draw High-DPI Bell Curve Canvas Chart with Axes, Grid & Data Labels
+function drawBellCurve(studentPercent, rankText = '') {
     const canvas = document.getElementById('bellCurveCanvas');
     if (!canvas || !canvas.getContext) return;
 
     const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
+    
+    // High-DPI Resolution Scaling for Crisp Graphics
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const displayWidth = rect.width || 800;
+    const displayHeight = rect.height || 220;
+
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+    ctx.scale(dpr, dpr);
+
+    const w = displayWidth;
+    const h = displayHeight;
 
     ctx.clearRect(0, 0, w, h);
 
-    const padding = 30;
-    const chartW = w - padding * 2;
-    const chartH = h - padding * 2;
-    const baseline = h - padding;
+    const isLight = document.body.classList.contains('light-theme');
+    const textMutedColor = isLight ? '#6c584c' : '#d4c3b3';
+    const gridLineColor = isLight ? 'rgba(108, 88, 76, 0.15)' : 'rgba(212, 163, 115, 0.18)';
+    const axisColor = isLight ? '#9c6638' : '#d4a373';
+
+    const paddingLeft = 45;
+    const paddingRight = 45;
+    const paddingTop = 30;
+    const paddingBottom = 40;
+
+    const chartW = w - paddingLeft - paddingRight;
+    const chartH = h - paddingTop - paddingBottom;
+    const baseline = h - paddingBottom;
 
     // Normal Distribution formula (Mean = 62.5%, StdDev = 15%)
     const mean = 62.5;
@@ -515,81 +566,170 @@ function drawBellCurve(studentPercent) {
         return Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
     }
 
-    // Draw Grid Lines & X-Axis
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    // 1. Draw Grid Lines (Horizontal & Vertical)
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = gridLineColor;
     ctx.lineWidth = 1;
 
-    ctx.beginPath();
-    ctx.moveTo(padding, baseline);
-    ctx.lineTo(w - padding, baseline);
-    ctx.stroke();
+    for (let i = 1; i <= 3; i++) {
+        const gy = baseline - (chartH * (i / 4));
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, gy);
+        ctx.lineTo(w - paddingRight, gy);
+        ctx.stroke();
+    }
 
-    // Draw Curve Fill Gradient
-    const grad = ctx.createLinearGradient(0, padding, 0, baseline);
-    grad.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
-    grad.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+    const ticks = [0, 25, 50, 62.5, 75, 90, 100];
+    ticks.forEach(t => {
+        const gx = paddingLeft + (t / 100) * chartW;
+        ctx.beginPath();
+        ctx.moveTo(gx, paddingTop);
+        ctx.lineTo(gx, baseline);
+        ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    // 2. Draw Curve Area Gradient Fill
+    const grad = ctx.createLinearGradient(0, paddingTop, 0, baseline);
+    grad.addColorStop(0, 'rgba(212, 163, 115, 0.45)');
+    grad.addColorStop(0.7, 'rgba(212, 163, 115, 0.15)');
+    grad.addColorStop(1, 'rgba(212, 163, 115, 0.02)');
 
     ctx.beginPath();
-    ctx.moveTo(padding, baseline);
+    ctx.moveTo(paddingLeft, baseline);
 
     for (let px = 0; px <= chartW; px += 2) {
         const percentX = (px / chartW) * 100;
         const yVal = gaussian(percentX);
-        const py = baseline - (yVal * (chartH - 20));
-        ctx.lineTo(padding + px, py);
+        const py = baseline - (yVal * (chartH - 10));
+        ctx.lineTo(paddingLeft + px, py);
     }
 
-    ctx.lineTo(w - padding, baseline);
+    ctx.lineTo(w - paddingRight, baseline);
     ctx.closePath();
     ctx.fillStyle = grad;
     ctx.fill();
 
-    // Draw Curve Line
-    ctx.strokeStyle = '#6366f1';
+    // 3. Draw Main Bell Curve Stroke
+    ctx.strokeStyle = '#d4a373';
     ctx.lineWidth = 3;
     ctx.beginPath();
 
     for (let px = 0; px <= chartW; px += 2) {
         const percentX = (px / chartW) * 100;
         const yVal = gaussian(percentX);
-        const py = baseline - (yVal * (chartH - 20));
-        if (px === 0) ctx.moveTo(padding + px, py);
-        else ctx.lineTo(padding + px, py);
+        const py = baseline - (yVal * (chartH - 10));
+        if (px === 0) ctx.moveTo(paddingLeft + px, py);
+        else ctx.lineTo(paddingLeft + px, py);
     }
     ctx.stroke();
 
-    // Plot Student Highlight Dot
-    const studentPx = (Math.min(100, Math.max(0, studentPercent)) / 100) * chartW;
-    const studentYVal = gaussian(studentPercent);
-    const studentPy = baseline - (studentYVal * (chartH - 20));
+    // 4. Draw X and Y Axes Lines
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1.5;
 
-    // Vertical dashed line to student position
+    // X Axis Line
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, baseline);
+    ctx.lineTo(w - paddingRight, baseline);
+    ctx.stroke();
+
+    // Y Axis Line (Right side for RTL layout)
+    ctx.beginPath();
+    ctx.moveTo(w - paddingRight, paddingTop);
+    ctx.lineTo(w - paddingRight, baseline);
+    ctx.stroke();
+
+    // 5. Draw Axis Labels & Tick Marks
+    ctx.fillStyle = textMutedColor;
+    ctx.font = '11px Cairo, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+
+    ticks.forEach(t => {
+        const tx = paddingLeft + (t / 100) * chartW;
+        ctx.beginPath();
+        ctx.moveTo(tx, baseline);
+        ctx.lineTo(tx, baseline + 4);
+        ctx.stroke();
+
+        let label = `${t}%`;
+        if (t === 62.5) label = '62.5% (المتوسط)';
+        ctx.fillText(label, tx, baseline + 18);
+    });
+
+    // Y-Axis Title Label
+    ctx.save();
+    ctx.translate(w - 12, paddingTop + chartH / 2);
+    ctx.rotate(Math.PI / 2);
+    ctx.font = 'bold 11px Cairo, system-ui, sans-serif';
+    ctx.fillStyle = axisColor;
+    ctx.textAlign = 'center';
+    ctx.fillText('كثافة الطلاب (عدد الناجحين)', 0, 0);
+    ctx.restore();
+
+    // X-Axis Title Label
+    ctx.font = 'bold 11px Cairo, system-ui, sans-serif';
+    ctx.fillStyle = axisColor;
+    ctx.textAlign = 'center';
+    ctx.fillText('← النسبة المئوية (%) →', paddingLeft + chartW / 2, baseline + 32);
+
+    // 6. Draw Student Position Indicator & Highlight Badge
+    const clampedPct = Math.min(100, Math.max(0, studentPercent));
+    const studentPx = (clampedPct / 100) * chartW;
+    const studentYVal = gaussian(clampedPct);
+    const studentPy = baseline - (studentYVal * (chartH - 10));
+    const dotX = paddingLeft + studentPx;
+
+    // Dashed Indicator Line
     ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = '#10b981';
+    ctx.strokeStyle = '#588157';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(padding + studentPx, baseline);
-    ctx.lineTo(padding + studentPx, studentPy);
+    ctx.moveTo(dotX, baseline);
+    ctx.lineTo(dotX, studentPy);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Outer Glowing Dot
+    // Glowing Outer Dot
     ctx.beginPath();
-    ctx.arc(padding + studentPx, studentPy, 10, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+    ctx.arc(dotX, studentPy, 9, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(88, 129, 87, 0.35)';
     ctx.fill();
 
     // Inner Glowing Dot
     ctx.beginPath();
-    ctx.arc(padding + studentPx, studentPy, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#10b981';
+    ctx.arc(dotX, studentPy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#588157';
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Floating Tooltip Badge Above Dot
+    const badgeText = `أنت هنا: ${clampedPct}% ${rankText ? '(' + rankText + ')' : ''}`;
+    ctx.font = 'bold 12px Cairo, system-ui, sans-serif';
+    const textWidth = ctx.measureText(badgeText).width;
+    const badgeW = textWidth + 16;
+    const badgeH = 24;
+    let badgeX = dotX - badgeW / 2;
+
+    if (badgeX < 5) badgeX = 5;
+    if (badgeX + badgeW > w - 5) badgeX = w - badgeW - 5;
+    const badgeY = Math.max(8, studentPy - 34);
+
+    ctx.fillStyle = isLight ? '#271d15' : '#d4a373';
+    ctx.beginPath();
+    if (ctx.roundRect) {
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+    } else {
+        ctx.rect(badgeX, badgeY, badgeW, badgeH);
+    }
     ctx.fill();
 
-    // Student Score Tooltip Bubble above dot
-    ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 12px Cairo, sans-serif';
+    ctx.fillStyle = isLight ? '#fefae0' : '#16100c';
     ctx.textAlign = 'center';
-    ctx.fillText(`${studentPercent}% (موقعك)`, padding + studentPx, studentPy - 14);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(badgeText, badgeX + badgeW / 2, badgeY + badgeH / 2);
 }
 
 // Fetch Top Performers with Static CDN Fallback and Branch Separation
