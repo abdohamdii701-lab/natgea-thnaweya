@@ -142,13 +142,13 @@ async function performSearch(query, mode) {
         }
     }
 
-    // 2. Static CDN Tokenized Name Search (1-Letter Prefix, Sorted Highest Score First)
+    // 2. Static CDN Tokenized Name Search (2-Letter Prefix, Sorted Highest Score First)
     if (!isNumeric || mode === 'name') {
         const normQuery = normalizeArabicJS(query);
         const tokens = normQuery.split(' ').filter(t => t);
         if (tokens.length > 0) {
             const firstWord = tokens[0];
-            const prefix = firstWord.substring(0, 1) || "ot";
+            const prefix = firstWord.length >= 2 ? firstWord.substring(0, 2) : (firstWord.substring(0, 1) || "ot");
             try {
                 const res = await fetch(`static/data/names/${prefix}.json`);
                 if (res.ok) {
@@ -329,13 +329,28 @@ async function fetchStats() {
     }
 }
 
-// Fetch Top Performers
+// Fetch Top Performers with Static CDN Fallback
 async function fetchTopStudents() {
     const topGrid = document.getElementById('topGrid');
     try {
-        const res = await fetch('/api/top');
-        const result = await res.json();
-        if (result.data && result.data.length > 0) {
+        let result = null;
+        try {
+            const staticRes = await fetch('static/data/top.json');
+            if (staticRes.ok) {
+                result = await staticRes.json();
+            }
+        } catch (err) {
+            console.log('Static top fetch fallback to API');
+        }
+
+        if (!result) {
+            const apiRes = await fetch('/api/top');
+            if (apiRes.ok) {
+                result = await apiRes.json();
+            }
+        }
+
+        if (result && result.data && result.data.length > 0) {
             topGrid.innerHTML = '';
             result.data.forEach((st, idx) => {
                 const card = document.createElement('div');
