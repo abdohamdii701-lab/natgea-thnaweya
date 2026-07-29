@@ -925,9 +925,14 @@ async function renderTansiqPredictor(student) {
                     const card = document.createElement('div');
                     card.className = 'tansiq-card';
                     card.innerHTML = `
-                        <div class="tcard-top">
-                            <span class="tcard-name">${sec.name}</span>
-                        <div class="tcard-meta" style="font-size: 11px; margin-top: 6px; color: var(--text-muted);">
+                        <div class="tcard-top" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <span class="tcard-name" style="font-weight:700; font-size:15px; color:var(--text-main);">${sec.name}</span>
+                            <span class="prob-badge ${badgeClass}">${probLabel} (${prob}%)</span>
+                        </div>
+                        <div class="prob-bar-bg" style="margin-bottom:8px;">
+                            <div class="prob-bar-fill" style="width: ${prob}%; background: ${barColor};"></div>
+                        </div>
+                        <div class="tcard-meta" style="font-size: 11px; color: var(--text-muted);">
                             <span>متوسط التنسيق (3 سنوات): <strong>${sec.avg_pct}%</strong> | الحد الأدنى: <strong>${sec.min_pct}%</strong></span>
                         </div>
                     `;
