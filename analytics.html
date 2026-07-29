@@ -1125,6 +1125,16 @@ function renderStage1Banner(track) {
     const s1 = tansiqData2026.stage1_limits[track];
     if (!s1) return;
 
+    const diff = parseFloat((s1.min_pct - s1.min_pct_2025).toFixed(2));
+    let diffBadge = '';
+    if (diff > 0) {
+        diffBadge = `<span style="color:#2a9d8f; font-weight:700; margin-right:6px;">📈 (ارتفاع متوقع +${diff}%)</span>`;
+    } else if (diff < 0) {
+        diffBadge = `<span style="color:#e76f51; font-weight:700; margin-right:6px;">📉 (انخفاض متوقع ${diff}%)</span>`;
+    } else {
+        diffBadge = `<span style="color:var(--text-muted); font-weight:700; margin-right:6px;">↔️ (استقرار متوقع)</span>`;
+    }
+
     bannerContainer.innerHTML = `
         <div style="background: linear-gradient(135deg, rgba(212,163,115,0.18), rgba(88,129,87,0.12)); border:1px solid var(--bg-card-border); border-radius: var(--radius-md); padding: 1rem 1.2rem; margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
             <div>
@@ -1138,7 +1148,7 @@ function renderStage1Banner(track) {
                     <span style="font-size:0.85rem; color:var(--text-muted);">(${s1.min_deg} درجة)</span>
                 </div>
                 <div style="font-size:0.78rem; color:var(--text-muted); border-right:1px solid var(--bg-card-border); padding-right:10px;">
-                    العام الماضي: <strong>${s1.min_pct_2025}%</strong>
+                    العام الماضي: <strong>${s1.min_pct_2025}%</strong> ${diffBadge}
                 </div>
             </div>
         </div>
@@ -1156,7 +1166,14 @@ function renderTansiqTrack(track, filterStage = 'all') {
     }
 
     grid.innerHTML = filtered.map(s => {
-        const shiftText = s.shift < 0 ? `📉 انخفاض متوقع (${s.shift}%)` : `↔️ استقرار متوقع`;
+        let shiftText = '';
+        if (s.shift > 0) {
+            shiftText = `📈 ارتفاع متوقع (+${s.shift}%)`;
+        } else if (s.shift < 0) {
+            shiftText = `📉 انخفاض متوقع (${s.shift}%)`;
+        } else {
+            shiftText = `↔️ استقرار متوقع`;
+        }
         const stageBadge = s.stage === 1 ? `<span style="background:rgba(212,163,115,0.2); color:var(--primary); border:1px solid rgba(212,163,115,0.4); font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:12px;">🥇 مرحلة أولى</span>` : `<span style="background:rgba(150,150,150,0.15); color:var(--text-muted); border:1px solid rgba(150,150,150,0.2); font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:12px;">🥈 مرحلة ثانية</span>`;
         const noteText = s.note ? `<div style="font-size:0.72rem; color:var(--gold); margin-top:0.4rem; background:rgba(230,197,148,0.08); padding:4px 8px; border-radius:6px; border:1px dashed rgba(230,197,148,0.2);">💡 ${s.note}</div>` : '';
 

@@ -920,47 +920,46 @@ async function renderTansiqPredictor(student) {
 
                 trackSectors.forEach(sec => {
                     const minPctCutoff = sec.proj_min_pct || sec.min_pct;
-                    const maxPctCutoff = sec.max_pct;
-                    const avgPctCutoff = (minPctCutoff + maxPctCutoff) / 2;
+                    const diff = stPct - minPctCutoff;
 
-                    // Realistic & Conservative Admission Probability Algorithm (2026 Public Universities Indicators)
+                    // Realistic & Fair Admission Probability Algorithm (2026 Public Universities Indicators)
                     let prob = 50;
                     let probLabel = '🟡 فرصة محتملة';
                     let badgeClass = 'prob-med';
                     let barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
 
-                    if (stPct >= maxPctCutoff) {
-                        prob = 100;
-                        probLabel = '🟢 فرصة مؤكدة 100%';
+                    if (diff >= 2.0) {
+                        prob = Math.min(99, Math.round(95 + (diff - 2.0) * 2));
+                        probLabel = '🟢 فرصة مؤكدة (قوية جداً)';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
-                    } else if (stPct >= avgPctCutoff) {
-                        const ratio = (stPct - avgPctCutoff) / (maxPctCutoff - avgPctCutoff || 1);
-                        prob = Math.round(80 + ratio * 19);
-                        probLabel = '🟢 فرصة قوية جداً';
+                    } else if (diff >= 0.75) {
+                        prob = Math.round(85 + ((diff - 0.75) / 1.25) * 9);
+                        probLabel = '🟢 فرصة مرتفعة جداً';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
-                    } else if (stPct >= minPctCutoff) {
-                        const ratio = (stPct - minPctCutoff) / (avgPctCutoff - minPctCutoff || 1);
-                        prob = Math.round(50 + ratio * 24);
-                        probLabel = '🟡 فرصة محتملة';
+                    } else if (diff >= 0) {
+                        // Student meets or exceeds the expected 2026 minimum cutoff!
+                        prob = Math.round(75 + (diff / 0.75) * 9);
+                        probLabel = '🟢 فرصة متوقعة للقبول';
+                        badgeClass = 'prob-high';
+                        barColor = 'linear-gradient(90deg, #10b981, #34d399)';
+                    } else if (diff >= -0.75) {
+                        // Slightly below cutoff (0.01% - 0.75%)
+                        prob = Math.round(50 + ((diff + 0.75) / 0.75) * 24);
+                        probLabel = '🟡 فرصة حرج / محتملة';
                         badgeClass = 'prob-med';
                         barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
-                    } else if (stPct >= minPctCutoff - 0.75) {
-                        const ratio = (stPct - (minPctCutoff - 0.75)) / 0.75;
-                        prob = Math.round(25 + ratio * 24);
-                        probLabel = '🟠 فرصة حديّة ضئيلة';
+                    } else if (diff >= -2.0) {
+                        // Below cutoff by 0.75% to 2.0%
+                        prob = Math.round(20 + ((diff + 2.0) / 1.25) * 29);
+                        probLabel = '🟠 فرصة ضئيلة';
                         badgeClass = 'prob-med';
                         barColor = 'linear-gradient(90deg, #f97316, #fb923c)';
-                    } else if (stPct >= minPctCutoff - 2.0) {
-                        const ratio = (stPct - (minPctCutoff - 2.0)) / 1.25;
-                        prob = Math.round(10 + ratio * 14);
-                        probLabel = '🔴 فرصة ضئيلة جداً';
-                        badgeClass = 'prob-low';
-                        barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
                     } else {
-                        prob = Math.max(2, Math.round(8 - (minPctCutoff - 2.0 - stPct) * 1.5));
-                        probLabel = '🔴 فرصة شبه معدومة';
+                        // More than 2.0% below cutoff
+                        prob = Math.max(2, Math.round(20 - (Math.abs(diff) - 2.0) * 8));
+                        probLabel = '🔴 فرصة ضعيفة جداً';
                         badgeClass = 'prob-low';
                         barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
                     }
