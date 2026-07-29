@@ -264,6 +264,7 @@ async function performSearch(query, mode) {
 
                 if (res.ok) {
                     const nameList = await res.json();
+                    const normQueryFull = normQuery; // full normalized query
                     const matches = nameList.filter(st => {
                         const normStName = st.nn || normalizeArabicJS(st.n);
                         const rawStName = st.n;
@@ -272,7 +273,17 @@ async function performSearch(query, mode) {
                             const altToken = token.endsWith('ه') ? token.slice(0, -1) + 'ة' : (token.endsWith('ة') ? token.slice(0, -1) + 'ه' : token);
                             return normStName.includes(normToken) || rawStName.includes(token) || rawStName.includes(altToken);
                         });
-                    }).sort((a, b) => b.d - a.d).slice(0, 30);
+                    }).map(st => {
+                        // Score match quality: 0=exact, 1=starts-with, 2=contains
+                        const normStName = st.nn || normalizeArabicJS(st.n);
+                        let matchScore = 2;
+                        if (normStName === normQueryFull || st.n === query) matchScore = 0;
+                        else if (normStName.startsWith(normQueryFull) || st.n.startsWith(query)) matchScore = 1;
+                        return { ...st, _matchScore: matchScore };
+                    }).sort((a, b) => {
+                        if (a._matchScore !== b._matchScore) return a._matchScore - b._matchScore;
+                        return b.d - a.d;
+                    }).slice(0, 100);
 
                     if (matches.length > 0) {
                         const formatted = matches.map(st => ({

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحليل نتيجة الثانوية العامة 2025 | إحصائيات شاملة</title>
+    <meta name="description" content="تحليل شامل لنتيجة الثانوية العامة 2025 - توزيع الدرجات، نسب النجاح والرسوب، منحنيات التوزيع لكل شعبة">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0f1a;
+            --bg2: #111827;
+            --bg3: #1a2235;
+            --card: #141c2e;
+            --card2: #1e2a40;
+            --border: rgba(99,130,210,0.15);
+            --text: #e8edf8;
+            --text2: #9aaac8;
+            --accent: #6382d2;
+            --gold: #f5c842;
+            --green: #34d399;
+            --red: #f87171;
+            --orange: #fb923c;
+            --yellow: #facc15;
+            --purple: #a78bfa;
+            --cyan: #22d3ee;
+
+            --branch-bio-color: #34d399;
+            --branch-math-color: #6382d2;
+            --branch-lit-color: #f5c842;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Cairo', 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 40% at 20% 10%, rgba(99,130,210,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 30% at 80% 80%, rgba(52,211,153,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(167,139,250,0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, rgba(99,130,210,0.15) 0%, rgba(52,211,153,0.08) 100%);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-icon {
+            width: 48px; height: 48px;
+            background: linear-gradient(135deg, #6382d2, #34d399);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 20px rgba(99,130,210,0.4);
+        }
+        .logo-text h1 { font-size: 1.3rem; font-weight: 900; color: var(--text); }
+        .logo-text p { font-size: 0.8rem; color: var(--text2); }
+
+        .back-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: rgba(99,130,210,0.15);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .back-btn:hover { background: rgba(99,130,210,0.3); transform: translateX(4px); }
+
+        /* Hero Section */
+        .hero {
+            padding: 3rem 0 2rem;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(99,130,210,0.15);
+            border: 1px solid rgba(99,130,210,0.3);
+            color: var(--accent);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .hero h2 {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 0%, #6382d2 40%, #34d399 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+        .hero p { color: var(--text2); font-size: 1.05rem; max-width: 600px; margin: 0 auto; }
+
+        /* Total stats row */
+        .total-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent, linear-gradient(90deg, #6382d2, #34d399));
+        }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+        .stat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1;
+        }
+        .stat-label { font-size: 0.85rem; color: var(--text2); margin-top: 0.35rem; }
+
+        /* Branch Tabs */
+        .branch-tabs {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2.5rem 0 1.5rem;
+        }
+        .tab-btn {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.65rem 1.5rem;
+            border-radius: 50px;
+            border: 2px solid transparent;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--card);
+            color: var(--text2);
+        }
+        .tab-btn[data-branch="علمي علوم"] { border-color: rgba(52,211,153,0.3); }
+        .tab-btn[data-branch="علمي رياضة"] { border-color: rgba(99,130,210,0.3); }
+        .tab-btn[data-branch="أدبي"] { border-color: rgba(245,200,66,0.3); }
+        .tab-btn.active[data-branch="علمي علوم"] { background: rgba(52,211,153,0.15); border-color: #34d399; color: #34d399; box-shadow: 0 0 20px rgba(52,211,153,0.2); }
+        .tab-btn.active[data-branch="علمي رياضة"] { background: rgba(99,130,210,0.15); border-color: #6382d2; color: #6382d2; box-shadow: 0 0 20px rgba(99,130,210,0.2); }
+        .tab-btn.active[data-branch="أدبي"] { background: rgba(245,200,66,0.15); border-color: #f5c842; color: #f5c842; box-shadow: 0 0 20px rgba(245,200,66,0.2); }
+
+        /* Branch Panel */
+        .branch-panel { display: none; animation: fadeUp 0.4s ease; }
+        .branch-panel.active { display: block; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pass/Fail Summary */
+        .pf-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        @media (max-width: 600px) { .pf-grid { grid-template-columns: 1fr; } }
+
+        .pf-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .pf-card.passed { border-color: rgba(52,211,153,0.3); }
+        .pf-card.second { border-color: rgba(251,146,60,0.3); }
+        .pf-card.failed { border-color: rgba(248,113,113,0.3); }
+        .pf-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 4px;
+        }
+        .pf-card.passed::after { background: linear-gradient(90deg, #34d399, #10b981); }
+        .pf-card.second::after { background: linear-gradient(90deg, #fb923c, #f59e0b); }
+        .pf-card.failed::after { background: linear-gradient(90deg, #f87171, #ef4444); }
+
+        .pf-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .pf-count { font-size: 2.2rem; font-weight: 900; }
+        .pf-card.passed .pf-count { color: #34d399; }
+        .pf-card.second .pf-count { color: #fb923c; }
+        .pf-card.failed .pf-count { color: #f87171; }
+        .pf-label { color: var(--text2); font-size: 0.9rem; margin-top: 0.3rem; }
+        .pf-pct { font-size: 1.1rem; font-weight: 700; margin-top: 0.2rem; }
+        .pf-card.passed .pf-pct { color: #34d399; }
+        .pf-card.second .pf-pct { color: #fb923c; }
+        .pf-card.failed .pf-pct { color: #f87171; }
+
+        /* Section title */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text2);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Bands Distribution */
+        .bands-section { margin-bottom: 2.5rem; }
+        .bands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 0.75rem;
+        }
+        .band-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 0.75rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .band-card:hover { transform: translateY(-2px); }
+        .band-range {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+        .band-count {
+            font-size: 1.6rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .band-pct {
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+            opacity: 0.8;
+        }
+        .band-bar-wrap {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 0.6rem;
+            overflow: hidden;
+        }
+        .band-bar { height: 100%; border-radius: 2px; transition: width 1s ease; }
+
+        /* Bell Curve Canvas */
+        .curve-section { margin-bottom: 2rem; }
+        .curve-wrap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .curve-wrap canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Compare Section (all 3 at once) */
+        .compare-section { margin: 3rem 0; }
+        .compare-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        .compare-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .compare-card .branch-label {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .compare-card .branch-label .dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+
+        /* Horizontal bar chart */
+        .hbar-list { display: flex; flex-direction: column; gap: 0.6rem; }
+        .hbar-row { display: flex; align-items: center; gap: 0.75rem; }
+        .hbar-label { font-size: 0.85rem; color: var(--text2); width: 80px; flex-shrink: 0; text-align: left; direction: ltr; }
+        .hbar-track {
+            flex: 1;
+            height: 28px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+        .hbar-fill {
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding-right: 8px;
+            justify-content: flex-end;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.9);
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+        .hbar-num { font-size: 0.8rem; color: var(--text2); width: 70px; flex-shrink: 0; text-align: left; direction: ltr; }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3rem 1rem 2rem;
+            color: var(--text2);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+
+        /* Loading */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            z-index: 999;
+            transition: opacity 0.5s;
+        }
+        .loader-ring {
+            width: 60px; height: 60px;
+            border: 3px solid rgba(99,130,210,0.2);
+            border-top-color: #6382d2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h2 { font-size: 1.8rem; }
+            .total-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .total-stats { grid-template-columns: 1fr 1fr; }
+            .bands-grid { grid-template-columns: repeat(3, 1fr); }
+            .band-count { font-size: 1.2rem; }
+        }
+
+        /* Number counter animation */
+        .count-up { display: inline-block; }
+
+        .glow-dot {
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 8px #34d399;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay">
+        <div class="loader-ring"></div>
+        <p style="color: var(--text2); font-size: 1rem;">جاري تحميل الإحصائيات...</p>
+    </div>
+
+    <header>
+        <div class="container header-inner">
+            <div class="logo-area">
+                <div class="logo-icon">📊</div>
+                <div class="logo-text">
+                    <h1>تحليل نتيجة 2025</h1>
+                    <p>إحصائيات شاملة • ثانوية عامة</p>
+                </div>
+            </div>
+            <a href="index.html" class="back-btn">🔍 ابحث عن نتيجتك ←</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <div class="hero-badge"><span class="glow-dot"></span> بيانات حقيقية ومحدّثة</div>
+            <h2>إحصائيات نتيجة الثانوية العامة</h2>
+            <p>تحليل شامل لأداء طلاب الثانوية العامة 2025 — توزيع الدرجات، نسب النجاح والرسوب، ومنحنيات التوزيع لكل شعبة</p>
+        </section>
+
+        <!-- Overall Stats -->
+        <div class="total-stats" id="totalStats">
+            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#6382d2,#a78bfa)">
+                <div class="stat-icon">🎓</div>
+                <div class="stat-value count-up" data-target="0" id="totalStudents">—</div>
+                <div class="stat-label">إجمالي الطلاب</div>
+            </div>
+            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#34d399,#10b981)">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value count-up" data-target="0" id="totalPassed">—</div>
+                <div class="stat-label">ناجح دور أول</div>
+            </div>
+            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#fb923c,#f59e0b)">
+                <div class="stat-icon">📝</div>
+                <div class="stat-value count-up" data-target="0" id="totalSecond">—</div>
+                <div class="stat-label">دور ثانٍ</div>
+            </div>
+            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#f87171,#ef4444)">
+                <div class="stat-icon">❌</div>
+                <div class="stat-value count-up" data-target="0" id="totalFailed">—</div>
+                <div class="stat-label">راسب دور أول</div>
+            </div>
+        </div>
+
+        <!-- Branch Tabs -->
+        <div class="branch-tabs">
+            <button class="tab-btn active" data-branch="علمي علوم" onclick="switchBranch('علمي علوم', this)">
+                🔬 علمي علوم
+            </button>
+            <button class="tab-btn" data-branch="علمي رياضة" onclick="switchBranch('علمي رياضة', this)">
+                📐 علمي رياضة
+            </button>
+            <button class="tab-btn" data-branch="أدبي" onclick="switchBranch('أدبي', this)">
+                📚 أدبي
+            </button>
+        </div>
+
+        <!-- Branch Panels -->
+        <div id="panel-علمي علوم" class="branch-panel active"></div>
+        <div id="panel-علمي رياضة" class="branch-panel"></div>
+        <div id="panel-أدبي" class="branch-panel"></div>
+
+        <!-- Compare All Branches -->
+        <section class="compare-section">
+            <div class="section-title">📊 مقارنة الشعب</div>
+            <div class="compare-grid" id="compareGrid"></div>
+        </section>
+    </div>
+
+    <footer>
+        <p>📊 بيانات مستخرجة من النتيجة الرسمية 2025 | تحليل شامل لـ <strong id="footerTotal">—</strong> طالب</p>
+        <p style="margin-top:0.5rem; opacity:0.6">جميع الأرقام دقيقة ومستخرجة مباشرة من قاعدة البيانات الرسمية</p>
+    </footer>
+
+    <script>
+    let analyticsData = null;
+
+    const BRANCH_CONFIG = {
+        'علمي علوم': { color: '#34d399', gradient: 'linear-gradient(135deg, #34d399, #10b981)', icon: '🔬', dot: '#34d399' },
+        'علمي رياضة': { color: '#6382d2', gradient: 'linear-gradient(135deg, #6382d2, #818cf8)', icon: '📐', dot: '#6382d2' },
+        'أدبي': { color: '#f5c842', gradient: 'linear-gradient(135deg, #f5c842, #f59e0b)', icon: '📚', dot: '#f5c842' }
+    };
+
+    const BAND_CONFIG = [
+        { key: 'above_90', label: '90% فأكثر', color: '#34d399', gradient: 'linear-gradient(90deg,#34d399,#10b981)', emoji: '🏆' },
+        { key: 'b80_90', label: '80% – 90%', color: '#22d3ee', gradient: 'linear-gradient(90deg,#22d3ee,#06b6d4)', emoji: '⭐' },
+        { key: 'b70_80', label: '70% – 80%', color: '#6382d2', gradient: 'linear-gradient(90deg,#6382d2,#818cf8)', emoji: '📘' },
+        { key: 'b60_70', label: '60% – 70%', color: '#a78bfa', gradient: 'linear-gradient(90deg,#a78bfa,#7c3aed)', emoji: '📗' },
+        { key: 'b50_60', label: '50% – 60%', color: '#fb923c', gradient: 'linear-gradient(90deg,#fb923c,#f59e0b)', emoji: '📙' },
+        { key: 'below_50', label: 'أقل من 50%', color: '#f87171', gradient: 'linear-gradient(90deg,#f87171,#ef4444)', emoji: '📕' }
+    ];
+
+    function fmtNum(n) {
+        return Number(n).toLocaleString('ar-EG');
+    }
+
+    function animateCount(el, target, duration = 1200) {
+        const start = performance.now();
+        const update = (now) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(target * eased);
+            el.textContent = current.toLocaleString('ar-EG');
+            if (progress < 1) requestAnimationFrame(update);
+        };
+        requestAnimationFrame(update);
+    }
+
+    function drawBranchCurve(canvas, curveData, branchColor) {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        const W = rect.width || canvas.offsetWidth || 600;
+        const H = W < 400 ? 220 : (W < 600 ? 260 : 320);
+
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        canvas.style.height = H + 'px';
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, W, H);
+
+        const isMobile = W < 500;
+        const padL = isMobile ? 12 : 50;
+        const padR = isMobile ? 12 : 30;
+        const padT = 30;
+        const padB = isMobile ? 36 : 50;
+
+        const plotW = W - padL - padR;
+        const plotH = H - padT - padB;
+
+        if (!curveData || curveData.length === 0) return;
+
+        const maxCount = Math.max(...curveData.map(d => d[1]));
+        const minPct = curveData[0][0];
+        const maxPct = curveData[curveData.length - 1][0];
+        const pctRange = maxPct - minPct || 1;
+
+        const toX = (p) => padL + ((p - minPct) / pctRange) * plotW;
+        const toY = (c) => padT + plotH - (c / maxCount) * plotH;
+
+        // Grid lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        [0, 25, 50, 75, 100].forEach(pct => {
+            const x = padL + ((pct - minPct) / pctRange) * plotW;
+            if (x >= padL && x <= padL + plotW) {
+                ctx.beginPath();
+                ctx.moveTo(x, padT);
+                ctx.lineTo(x, padT + plotH);
+                ctx.stroke();
+            }
+        });
+        [0.25, 0.5, 0.75, 1].forEach(frac => {
+            const y = padT + plotH * (1 - frac);
+            ctx.beginPath();
+            ctx.moveTo(padL, y);
+            ctx.lineTo(padL + plotW, y);
+            ctx.stroke();
+        });
+
+        // Gradient fill under curve
+        const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
+        grad.addColorStop(0, branchColor + '55');
+        grad.addColorStop(1, branchColor + '05');
+
+        ctx.beginPath();
+        ctx.moveTo(toX(curveData[0][0]), toY(0));
+        curveData.forEach(([p, c]) => ctx.lineTo(toX(p), toY(c)));
+        ctx.lineTo(toX(curveData[curveData.length - 1][0]), toY(0));
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Curve line
+        ctx.beginPath();
+        ctx.moveTo(toX(curveData[0][0]), toY(curveData[0][1]));
+        for (let i = 1; i < curveData.length; i++) {
+            const prev = curveData[i - 1];
+            const curr = curveData[i];
+            const cpx = (toX(prev[0]) + toX(curr[0])) / 2;
+            ctx.bezierCurveTo(cpx, toY(prev[1]), cpx, toY(curr[1]), toX(curr[0]), toY(curr[1]));
+        }
+        ctx.strokeStyle = branchColor;
+        ctx.lineWidth = isMobile ? 2 : 2.5;
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+
+        // Glow effect
+        ctx.shadowColor = branchColor;
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // X Axis
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, padT + plotH);
+        ctx.lineTo(padL + plotW, padT + plotH);
+        ctx.stroke();
+
+        // X ticks
+        if (!isMobile) {
+            const ticks = [0, 25, 50, 60, 70, 75, 80, 90, 100];
+            ctx.fillStyle = 'rgba(150,170,200,0.7)';
+            ctx.font = '11px Cairo, sans-serif';
+            ctx.textAlign = 'center';
+            ticks.forEach(pct => {
+                const x = padL + ((pct - minPct) / pctRange) * plotW;
+                if (x >= padL && x <= padL + plotW) {
+                    ctx.fillText(pct + '%', x, padT + plotH + 18);
+                }
+            });
+        } else {
+            const ticks = [0, 50, 75, 100];
+            ctx.fillStyle = 'rgba(150,170,200,0.7)';
+            ctx.font = '10px Cairo, sans-serif';
+            ctx.textAlign = 'center';
+            ticks.forEach(pct => {
+                const x = padL + ((pct - minPct) / pctRange) * plotW;
+                if (x >= padL && x <= padL + plotW) {
+                    ctx.fillText(pct + '%', x, padT + plotH + 16);
+                }
+            });
+        }
+
+        // Peak annotation
+        const peak = curveData.reduce((a, b) => b[1] > a[1] ? b : a);
+        const px = toX(peak[0]);
+        const py = toY(peak[1]);
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.fillStyle = branchColor;
+        ctx.fill();
+        ctx.shadowColor = branchColor;
+        ctx.shadowBlur = 12;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        if (!isMobile) {
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.font = 'bold 11px Cairo, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`ذروة: ${peak[0]}%`, px, py - 12);
+        }
+    }
+
+    function buildBranchPanel(branch, data) {
+        const cfg = BRANCH_CONFIG[branch];
+        const total = data.total;
+        const bands = data.bands;
+        const allBandTotal = Object.values(bands).reduce((a, b) => a + b, 0) || total;
+
+        let bandsHTML = BAND_CONFIG.map(bc => {
+            const count = bands[bc.key] || 0;
+            const pct = ((count / allBandTotal) * 100).toFixed(1);
+            return `
+            <div class="band-card" style="border-color: ${bc.color}22">
+                <div class="band-range" style="color:${bc.color}">${bc.emoji} ${bc.label}</div>
+                <div class="band-count" style="color:${bc.color}" data-target="${count}">${fmtNum(count)}</div>
+                <div class="band-pct" style="color:${bc.color}">${pct}%</div>
+                <div class="band-bar-wrap">
+                    <div class="band-bar" style="width:0%; background:${bc.gradient}" data-width="${pct}"></div>
+                </div>
+            </div>`;
+        }).join('');
+
+        const passedPct = ((data.passed / total) * 100).toFixed(1);
+        const secondPct = ((data.second_round / total) * 100).toFixed(1);
+        const failedPct = ((data.failed / total) * 100).toFixed(1);
+
+        const panel = document.getElementById(`panel-${branch}`);
+        panel.innerHTML = `
+        <div class="pf-grid">
+            <div class="pf-card passed">
+                <div class="pf-icon">🎉</div>
+                <div class="pf-count">${fmtNum(data.passed)}</div>
+                <div class="pf-label">ناجح دور أول</div>
+                <div class="pf-pct">${passedPct}%</div>
+            </div>
+            <div class="pf-card second">
+                <div class="pf-icon">📝</div>
+                <div class="pf-count">${fmtNum(data.second_round)}</div>
+                <div class="pf-label">دور ثانٍ</div>
+                <div class="pf-pct">${secondPct}%</div>
+            </div>
+            <div class="pf-card failed">
+                <div class="pf-icon">😔</div>
+                <div class="pf-count">${fmtNum(data.failed)}</div>
+                <div class="pf-label">راسب دور أول</div>
+                <div class="pf-pct">${failedPct}%</div>
+            </div>
+        </div>
+
+        <div class="bands-section">
+            <div class="section-title">🎯 توزيع الطلاب حسب نسبة الدرجات</div>
+            <div class="bands-grid">${bandsHTML}</div>
+        </div>
+
+        <div class="curve-section">
+            <div class="section-title">📈 منحنى توزيع الدرجات — ${branch}</div>
+            <div class="curve-wrap">
+                <canvas id="curve-${branch.replace(/ /g,'-')}" style="width:100%;display:block;"></canvas>
+            </div>
+        </div>
+        `;
+    }
+
+    function buildCompareGrid() {
+        const branches = ['علمي علوم', 'علمي رياضة', 'أدبي'];
+        const grid = document.getElementById('compareGrid');
+        grid.innerHTML = branches.map(branch => {
+            const d = analyticsData[branch];
+            const cfg = BRANCH_CONFIG[branch];
+            const total = d.total;
+            const maxBand = Math.max(...BAND_CONFIG.map(b => d.bands[b.key] || 0));
+
+            const bars = BAND_CONFIG.map(bc => {
+                const count = d.bands[bc.key] || 0;
+                const pct = maxBand > 0 ? ((count / maxBand) * 100).toFixed(1) : 0;
+                const ofTotal = ((count / total) * 100).toFixed(1);
+                return `
+                <div class="hbar-row">
+                    <span class="hbar-label" style="color:${bc.color};font-size:0.78rem;">${bc.label}</span>
+                    <div class="hbar-track">
+                        <div class="hbar-fill" style="width:0%;background:${bc.gradient}" data-width="${pct}">
+                            ${ofTotal}%
+                        </div>
+                    </div>
+                    <span class="hbar-num">${fmtNum(count)}</span>
+                </div>`;
+            }).join('');
+
+            return `
+            <div class="compare-card" style="border-color:${cfg.color}30">
+                <div class="branch-label">
+                    <span class="dot" style="background:${cfg.color};box-shadow:0 0 8px ${cfg.color}"></span>
+                    ${cfg.icon} ${branch}
+                    <span style="margin-right:auto;font-size:0.8rem;color:var(--text2);font-weight:400">${fmtNum(total)} طالب</span>
+                </div>
+                <div class="hbar-list">${bars}</div>
+            </div>`;
+        }).join('');
+    }
+
+    function animateBars() {
+        document.querySelectorAll('.band-bar[data-width]').forEach(el => {
+            setTimeout(() => { el.style.width = el.dataset.width + '%'; }, 100);
+        });
+        document.querySelectorAll('.hbar-fill[data-width]').forEach(el => {
+            setTimeout(() => { el.style.width = el.dataset.width + '%'; }, 200);
+        });
+    }
+
+    function drawAllCurves() {
+        const branches = ['علمي علوم', 'علمي رياضة', 'أدبي'];
+        branches.forEach(branch => {
+            const canvasId = `curve-${branch.replace(/ /g, '-')}`;
+            const canvas = document.getElementById(canvasId);
+            if (canvas && analyticsData[branch]?.curve) {
+                drawBranchCurve(canvas, analyticsData[branch].curve, BRANCH_CONFIG[branch].color);
+            }
+        });
+    }
+
+    function switchBranch(branch, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.branch-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const panel = document.getElementById(`panel-${branch}`);
+        panel.classList.add('active');
+        animateBars();
+        setTimeout(() => {
+            const canvasId = `curve-${branch.replace(/ /g, '-')}`;
+            const canvas = document.getElementById(canvasId);
+            if (canvas && analyticsData?.[branch]?.curve) {
+                drawBranchCurve(canvas, analyticsData[branch].curve, BRANCH_CONFIG[branch].color);
+            }
+        }, 50);
+    }
+
+    async function init() {
+        try {
+            const res = await fetch('static/data/analytics.json');
+            analyticsData = await res.json();
+
+            const branches = Object.keys(analyticsData);
+            let totTotal = 0, totPassed = 0, totSecond = 0, totFailed = 0;
+            branches.forEach(b => {
+                totTotal += analyticsData[b].total;
+                totPassed += analyticsData[b].passed;
+                totSecond += analyticsData[b].second_round;
+                totFailed += analyticsData[b].failed;
+            });
+
+            animateCount(document.getElementById('totalStudents'), totTotal);
+            animateCount(document.getElementById('totalPassed'), totPassed);
+            animateCount(document.getElementById('totalSecond'), totSecond);
+            animateCount(document.getElementById('totalFailed'), totFailed);
+            const fe = document.getElementById('footerTotal');
+            if (fe) fe.textContent = fmtNum(totTotal);
+
+            // Build panels
+            ['علمي علوم', 'علمي رياضة', 'أدبي'].forEach(branch => {
+                if (analyticsData[branch]) buildBranchPanel(branch, analyticsData[branch]);
+            });
+
+            buildCompareGrid();
+
+            // Hide loader
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.remove(), 500);
+
+            // Animate
+            setTimeout(() => {
+                animateBars();
+                setTimeout(drawAllCurves, 300);
+            }, 200);
+
+            // Resize handler
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(drawAllCurves, 150);
+            });
+
+        } catch (err) {
+            console.error('Failed to load analytics:', err);
+            document.getElementById('loadingOverlay').innerHTML = `
+                <div style="text-align:center;padding:2rem">
+                    <div style="font-size:3rem;margin-bottom:1rem">⚠️</div>
+                    <p style="color:#f87171">تعذّر تحميل البيانات</p>
+                </div>`;
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>
