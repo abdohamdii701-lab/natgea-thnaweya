@@ -889,32 +889,34 @@ async function renderTansiqPredictor(student) {
                 }
 
                 trackSectors.forEach(sec => {
-                    // Probability calculation algorithm
-                    let prob = 50;
-                    let probLabel = '🟡 فرصة محتملة';
-                    let badgeClass = 'prob-med';
-                    let barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
-
+                    // Mathematically sound and fair 5-stage admission probability algorithm
                     if (stPct >= sec.max_pct) {
-                        prob = Math.min(99, 95 + (stPct - sec.max_pct) * 2);
+                        const bonus = Math.min(4, (stPct - sec.max_pct) * 1.5);
+                        prob = 95 + bonus;
                         probLabel = '🟢 فرصة مؤكدة جداً';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
                     } else if (stPct >= sec.avg_pct) {
                         const ratio = (stPct - sec.avg_pct) / (sec.max_pct - sec.avg_pct || 1);
-                        prob = 80 + ratio * 15;
+                        prob = 80 + ratio * 14;
                         probLabel = '🟢 فرصة قوية جداً';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
-                    } else if (stPct >= sec.min_pct - 1.5) {
-                        const ratio = (stPct - (sec.min_pct - 1.5)) / (sec.avg_pct - (sec.min_pct - 1.5) || 1);
-                        prob = 50 + ratio * 30;
+                    } else if (stPct >= sec.min_pct) {
+                        const ratio = (stPct - sec.min_pct) / (sec.avg_pct - sec.min_pct || 1);
+                        prob = 50 + ratio * 29;
                         probLabel = '🟡 فرصة محتملة';
                         badgeClass = 'prob-med';
                         barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
+                    } else if (stPct >= sec.min_pct - 2.0) {
+                        const ratio = (stPct - (sec.min_pct - 2.0)) / 2.0;
+                        prob = 20 + ratio * 29;
+                        probLabel = '🟠 فرصة حديّة (ضعيفة)';
+                        badgeClass = 'prob-med';
+                        barColor = 'linear-gradient(90deg, #f97316, #fb923c)';
                     } else {
-                        const ratio = Math.max(0, stPct / (sec.min_pct - 1.5 || 1));
-                        prob = Math.max(10, Math.round(ratio * 45));
+                        const diff = sec.min_pct - stPct;
+                        prob = Math.max(5, Math.round(18 - diff * 2.5));
                         probLabel = '🔴 فرصة ضئيلة';
                         badgeClass = 'prob-low';
                         barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
