@@ -149,14 +149,14 @@
       "name": "الملاحة وتكنولوجيا الفضاء (حكومي)",
       "track": "science_math",
       "stage": 1,
-      "prev_min_pct": 89.0,
-      "proj_min_pct": 97.66,
-      "proj_min_deg": 312.5,
+      "prev_min_pct": 82.68,
+      "proj_min_pct": 82.66,
+      "proj_min_deg": 264.5,
       "max_pct": 99.84,
-      "trend": "up",
-      "shift": 8.66,
-      "capacity": 350,
-      "note": "كلية علوم الملاحة وتكنولوجيا الفضاء ببني سويف"
+      "trend": "flat",
+      "shift": -0.02,
+      "capacity": 24000,
+      "note": "كلية علوم الملاحة وتكنولوجيا الفضاء بجامعة بني سويف (شعبة رياضة)"
     },
     {
       "name": "الهندسة (حكومي)",
