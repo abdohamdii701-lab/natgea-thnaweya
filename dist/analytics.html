@@ -585,13 +585,13 @@ document.getElementById('themeToggle').addEventListener('click', () => {
     else applyTheme(false); // default light like main site
 })();
 
-// ── Canvas Bell Curve ────────────────────────────────
-function drawCurve(canvas, curveData, rawColor) {
+// -- Histogram Chart
+function drawHistogram(canvas, curveData, rawColor, branchData) {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     const W = rect.width || canvas.offsetWidth || 600;
-    const isMobile = W < 500;
-    const H = isMobile ? 210 : (W < 720 ? 260 : 300);
+    const isMobile = W < 520;
+    const H = isMobile ? 240 : (W < 720 ? 300 : 350);
 
     canvas.width  = W * dpr;
     canvas.height = H * dpr;
@@ -603,124 +603,217 @@ function drawCurve(canvas, curveData, rawColor) {
 
     if (!curveData || curveData.length < 2) return;
 
-    const pL = isMobile ? 10 : 48;
-    const pR = isMobile ? 10 : 24;
-    const pT = 34;
-    const pB = isMobile ? 32 : 46;
+    const isLight = document.body.classList.contains('light-theme');
+
+    const pL = isMobile ? 50 : 68;
+    const pR = isMobile ? 10 : 16;
+    const pT = isMobile ? 34 : 46;
+    const pB = isMobile ? 46 : 56;
     const plotW = W - pL - pR;
     const plotH = H - pT - pB;
 
-    const counts = curveData.map(d => d[1]);
-    const maxC   = Math.max(...counts);
-    const minPct = curveData[0][0];
-    const maxPct = curveData[curveData.length - 1][0];
-    const pctRange = maxPct - minPct || 1;
+    // 1. Build 5% bins
+    const BIN = 5;
+    const bins = {};
+    for (let s = 0; s <= 95; s += BIN) bins[s] = 0;
+    curveData.forEach(([pct, cnt]) => {
+        const key = Math.floor(pct / BIN) * BIN;
+        if (key >= 0 && key <= 95) bins[key] = (bins[key] || 0) + cnt;
+    });
+    const binKeys   = Object.keys(bins).map(Number).sort((a,b) => a-b);
+    const binCounts = binKeys.map(k => bins[k]);
+    const maxCount  = Math.max(...binCounts);
 
-    const toX = p => pL + ((p - minPct) / pctRange) * plotW;
-    const toY = c => pT + plotH - (c / maxC) * plotH;
+    // 2. Weighted mean
+    let wSum = 0, wN = 0;
+    curveData.forEach(([pct, cnt]) => { wSum += pct * cnt; wN += cnt; });
+    const meanPct = wN > 0 ? wSum / wN : 50;
 
-    // Detect light / dark
-    const isLight = document.body.classList.contains('light-theme');
+    // Coordinate helpers
+    const xOf = (pct) => pL + (pct / 100) * plotW;
+    const yOf = (cnt) => pT + plotH - (cnt / maxCount) * plotH;
 
-    // Grid horizontals
-    ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+    // 3. Nice Y ticks
+    const rawStep = maxCount / 5;
+    const mag = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+    const niceStep = Math.ceil(rawStep / mag) * mag || 1000;
+    const yTicks = [];
+    for (let v = 0; v <= maxCount * 1.08; v += niceStep) yTicks.push(v);
+
+    const textColor = isLight ? 'rgba(55,35,15,0.78)' : 'rgba(225,205,178,0.78)';
+    const gridColor = isLight ? 'rgba(0,0,0,0.07)'    : 'rgba(255,255,255,0.07)';
+    const axisColor = isLight ? 'rgba(0,0,0,0.22)'    : 'rgba(255,255,255,0.22)';
+    const avgColor  = '#d4a373';
+    const passColor = '#588157';
+    const labelFont = ${isMobile ? 9 : 10}px Cairo, sans-serif;
+    const boldFont  = old px Cairo, sans-serif;
+
+    // 4. Horizontal grid + Y labels
+    ctx.strokeStyle = gridColor;
     ctx.lineWidth = 1;
-    [0.25, 0.5, 0.75, 1].forEach(f => {
-        const y = pT + plotH * (1 - f);
+    yTicks.forEach(v => {
+        if (v > maxCount * 1.1) return;
+        const y = yOf(v);
         ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(pL + plotW, y); ctx.stroke();
+        ctx.fillStyle = textColor;
+        ctx.font = labelFont;
+        ctx.textAlign = 'right';
+        const lbl = v >= 10000 ? Math.round(v/1000) + 'k'
+                  : v >= 1000  ? (v/1000).toFixed(1) + 'k'
+                  : String(v);
+        ctx.fillText(lbl, pL - 5, y + 3.5);
     });
 
-    // Grid verticals (major %)
-    const vTicks = isMobile ? [0, 25, 50, 75, 100] : [0, 25, 50, 60, 70, 75, 80, 90, 100];
-    ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)';
-    vTicks.forEach(pct => {
-        const x = toX(pct);
-        if (x >= pL && x <= pL + plotW) {
-            ctx.beginPath(); ctx.moveTo(x, pT); ctx.lineTo(x, pT + plotH); ctx.stroke();
-        }
-    });
-
-    // Fill gradient
-    const grad = ctx.createLinearGradient(0, pT, 0, pT + plotH);
-    grad.addColorStop(0, rawColor + '55');
-    grad.addColorStop(0.6, rawColor + '22');
-    grad.addColorStop(1, rawColor + '04');
-    ctx.beginPath();
-    ctx.moveTo(toX(curveData[0][0]), pT + plotH);
-    curveData.forEach(([p, c]) => ctx.lineTo(toX(p), toY(c)));
-    ctx.lineTo(toX(curveData[curveData.length - 1][0]), pT + plotH);
-    ctx.closePath();
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    // Smooth curve line
-    ctx.beginPath();
-    ctx.moveTo(toX(curveData[0][0]), toY(curveData[0][1]));
-    for (let i = 1; i < curveData.length; i++) {
-        const [px, py] = curveData[i - 1];
-        const [cx, cy] = curveData[i];
-        const mx = (toX(px) + toX(cx)) / 2;
-        ctx.bezierCurveTo(mx, toY(py), mx, toY(cy), toX(cx), toY(cy));
-    }
-    ctx.strokeStyle = rawColor;
-    ctx.lineWidth = isMobile ? 2 : 2.5;
-    ctx.lineJoin = 'round';
-    ctx.shadowColor = rawColor;
-    ctx.shadowBlur = 10;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    // X-axis line
-    ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(pL, pT + plotH); ctx.lineTo(pL + plotW, pT + plotH); ctx.stroke();
-
-    // Tick labels
-    const textColor = isLight ? 'rgba(80,60,40,0.65)' : 'rgba(210,195,175,0.65)';
-    ctx.fillStyle = textColor;
-    ctx.font = `${isMobile ? 9 : 10}px Cairo, sans-serif`;
-    ctx.textAlign = 'center';
-    const labelTicks = isMobile ? [0, 25, 50, 75, 100] : [0, 25, 50, 70, 80, 90, 100];
-    labelTicks.forEach(pct => {
-        const x = toX(pct);
-        if (x >= pL - 5 && x <= pL + plotW + 5) {
-            ctx.fillText(pct + '%', x, pT + plotH + (isMobile ? 14 : 18));
-        }
-    });
-
-    // Y-axis label
+    // Y-axis title
     if (!isMobile) {
         ctx.save();
-        ctx.translate(14, pT + plotH / 2);
+        ctx.translate(12, pT + plotH / 2);
         ctx.rotate(-Math.PI / 2);
-        ctx.font = '9px Cairo, sans-serif';
+        ctx.font = '10px Cairo, sans-serif';
         ctx.fillStyle = textColor;
         ctx.textAlign = 'center';
-        ctx.fillText('عدد الطلاب', 0, 0);
+        ctx.fillText('\u0639\u062f\u062f \u0627\u0644\u0637\u0644\u0627\u0628', 0, 0);
         ctx.restore();
     }
 
-    // Peak dot + label
-    const peakIdx = counts.indexOf(maxC);
-    const [peakP, peakC] = curveData[peakIdx];
-    const px2 = toX(peakP), py2 = toY(peakC);
+    // 5. Draw bars
+    const unitW = plotW / 20;
+    const barW  = unitW * 0.78;
+    const barGap = (unitW - barW) / 2;
 
-    ctx.beginPath();
-    ctx.arc(px2, py2, isMobile ? 4 : 5, 0, Math.PI * 2);
-    ctx.fillStyle = rawColor;
-    ctx.shadowColor = rawColor;
-    ctx.shadowBlur = 14;
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    binKeys.forEach((startPct, i) => {
+        const count = binCounts[i];
+        if (count === 0) return;
+        const barX = pL + (startPct / 100) * plotW + barGap;
+        const barH = (count / maxCount) * plotH;
+        const barY = pT + plotH - barH;
 
-    // Peak callout
-    const labelX = Math.max(pL + 30, Math.min(px2, pL + plotW - 30));
-    const labelY = Math.max(pT + 16, py2 - 14);
-    ctx.fillStyle = isLight ? 'rgba(40,20,10,0.75)' : 'rgba(255,240,220,0.85)';
-    ctx.font = `bold ${isMobile ? 9 : 10}px Cairo, sans-serif`;
+        const alpha = startPct >= 50 ? 'CC' : '77';
+        const grd = ctx.createLinearGradient(0, barY, 0, pT + plotH);
+        grd.addColorStop(0, rawColor + alpha);
+        grd.addColorStop(1, rawColor + '22');
+
+        ctx.fillStyle = grd;
+        const r = Math.min(4, barW * 0.35);
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, barH, [r, r, 0, 0]);
+        ctx.fill();
+
+        ctx.strokeStyle = rawColor + '44';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+
+        // Count on bar
+        if (barH > (isMobile ? 20 : 24) && count > 0) {
+            ctx.fillStyle = isLight ? 'rgba(35,18,5,0.72)' : 'rgba(255,245,225,0.82)';
+            ctx.font = ${isMobile ? 7 : 8}px Cairo, sans-serif;
+            ctx.textAlign = 'center';
+            const lbl = count >= 10000 ? Math.round(count/1000) + 'k'
+                      : count >= 1000  ? (count/1000).toFixed(1) + 'k'
+                      : String(count);
+            ctx.fillText(lbl, barX + barW / 2, barY - 2);
+        }
+    });
+
+    // 6. Axes
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(pL, pT); ctx.lineTo(pL, pT + plotH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pL, pT + plotH); ctx.lineTo(pL + plotW, pT + plotH); ctx.stroke();
+
+    // 7. X-axis labels (every 10%)
+    [0,10,20,30,40,50,60,70,80,90,100].forEach(pct => {
+        const x = xOf(pct);
+        ctx.strokeStyle = axisColor;
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x, pT + plotH); ctx.lineTo(x, pT + plotH + 4); ctx.stroke();
+        ctx.fillStyle = textColor;
+        ctx.font = ${isMobile ? 8.5 : 9.5}px Cairo, sans-serif;
+        ctx.textAlign = 'center';
+        ctx.fillText(pct + '%', x, pT + plotH + (isMobile ? 15 : 18));
+    });
+
+    // X-axis title
+    ctx.fillStyle = textColor;
+    ctx.font = ${isMobile ? 7.5 : 9}px Cairo, sans-serif;
     ctx.textAlign = 'center';
-    ctx.fillText(`ذروة ${peakP.toFixed(1)}%`, labelX, labelY);
+    ctx.fillText('\u0646\u0633\u0628\u0629 \u0627\u0644\u062f\u0631\u062c\u0627\u062a \u2014 \u0643\u0644 \u0634\u0631\u064a\u0637 = \u0646\u0637\u0627\u0642 5%', pL + plotW / 2, H - (isMobile ? 3 : 5));
+
+    // 8. Mean line
+    const meanX = xOf(meanPct);
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = avgColor;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = avgColor;
+    ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.moveTo(meanX, pT + 4); ctx.lineTo(meanX, pT + plotH); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    const meanLabel = '\u0645\u062a\u0648\u0633\u0637: ' + meanPct.toFixed(1) + '%';
+    ctx.font = boldFont;
+    ctx.textAlign = 'center';
+    const mlW = ctx.measureText(meanLabel).width + 14;
+    const mlX = Math.max(pL + mlW/2 + 2, Math.min(meanX, pL + plotW - mlW/2 - 4));
+    ctx.fillStyle = isLight ? 'rgba(212,163,115,0.2)' : 'rgba(212,163,115,0.25)';
+    ctx.beginPath(); ctx.roundRect(mlX - mlW/2, pT + 6, mlW, 19, 5); ctx.fill();
+    ctx.fillStyle = avgColor;
+    ctx.fillText(meanLabel, mlX, pT + 19);
+
+    // 9. Pass 50% line
+    const pass50X = xOf(50);
+    ctx.save();
+    ctx.setLineDash([4, 5]);
+    ctx.strokeStyle = passColor + 'AA';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(pass50X, pT); ctx.lineTo(pass50X, pT + plotH); ctx.stroke();
+    ctx.restore();
+
+    if (!isMobile) {
+        ctx.fillStyle = passColor + 'CC';
+        ctx.font = 'bold 8.5px Cairo, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('\u062d\u062f \u0627\u0644\u0646\u062c\u0627\u062d 50%', pass50X + 5, pT + (pT > 40 ? 30 : 22));
+    }
+
+    // 10. Legend (desktop only)
+    if (!isMobile) {
+        ctx.font = '9px Cairo, sans-serif';
+        const items = [
+            { color: rawColor,  label: '\u0639\u062f\u062f \u0627\u0644\u0637\u0644\u0627\u0628 \u0641\u064a \u0643\u0644 \u0646\u0637\u0627\u0642 5%', dash: false },
+            { color: avgColor,  label: '\u0645\u062a\u0648\u0633\u0637 (' + meanPct.toFixed(1) + '%)', dash: true },
+            { color: passColor, label: '\u062d\u062f \u0627\u0644\u0646\u062c\u0627\u062d (50%)', dash: true },
+        ];
+        let lx = pL;
+        const ly = pT - 22;
+        items.forEach(item => {
+            const tw = ctx.measureText(item.label).width;
+            if (item.dash) {
+                ctx.save(); ctx.setLineDash([5,3]);
+                ctx.strokeStyle = item.color; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(lx, ly+6); ctx.lineTo(lx+20, ly+6); ctx.stroke();
+                ctx.restore();
+            } else {
+                const g2 = ctx.createLinearGradient(lx, ly, lx+20, ly);
+                g2.addColorStop(0, item.color + 'CC');
+                g2.addColorStop(1, item.color + '44');
+                ctx.fillStyle = g2;
+                ctx.beginPath(); ctx.roundRect(lx, ly, 20, 11, 2); ctx.fill();
+            }
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'left';
+            ctx.fillText(item.label, lx + 24, ly + 9);
+            lx += 26 + tw + 16;
+        });
+    }
 }
+
+// Alias
+function drawCurve(canvas, curveData, rawColor, branchData) {
+    drawHistogram(canvas, curveData, rawColor, branchData);
+}
+
 
 // ── Build Branch Panel ───────────────────────────────
 function buildPanel(branch, data) {
@@ -828,7 +921,7 @@ function drawAll() {
         const id = `cv-${branch.replace(/ /g, '_')}`;
         const canvas = document.getElementById(id);
         if (!canvas || !analyticsData?.[branch]?.curve) return;
-        drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor);
+        drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor, analyticsData[branch]);
         // Update peak badge
         const curve = analyticsData[branch].curve;
         const peak = curve.reduce((a, b) => b[1] > a[1] ? b : a);
@@ -848,7 +941,7 @@ function switchBranch(branch, btn) {
         const id = `cv-${branch.replace(/ /g, '_')}`;
         const canvas = document.getElementById(id);
         if (canvas && analyticsData?.[branch]?.curve) {
-            drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor);
+            drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor, analyticsData[branch]);
             const peak = analyticsData[branch].curve.reduce((a, b) => b[1] > a[1] ? b : a);
             const badge = document.getElementById(`peak-${id}`);
             if (badge) badge.textContent = `📍 ذروة التوزيع عند ${peak[0].toFixed(1)}%`;
