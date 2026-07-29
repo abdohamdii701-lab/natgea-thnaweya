@@ -159,6 +159,7 @@ function renderStudentList(students) {
 
 // Helper: Select student from list to display full certificate
 async function selectStudent(seatingNo) {
+    if (!seatingNo) return;
     const chunkKey = Math.floor(parseInt(seatingNo) / 5000) * 5000;
     try {
         const res = await fetch(`static/data/seating/${chunkKey}.json`);
@@ -166,6 +167,9 @@ async function selectStudent(seatingNo) {
             const chunkData = await res.json();
             if (chunkData[seatingNo]) {
                 const st = chunkData[seatingNo];
+                hideResults();
+                const resultsSection = document.getElementById('resultsSection');
+                if (resultsSection) resultsSection.style.display = 'block';
                 renderSingleStudent({
                     seating_no: seatingNo,
                     arabic_name: st.n,
@@ -175,7 +179,7 @@ async function selectStudent(seatingNo) {
                     branch_name: st.b,
                     subjects: st.subj || {}
                 });
-                document.getElementById('resultsSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                resultsSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
         }
@@ -813,13 +817,22 @@ async function fetchTopStudents(trackMode = 'all') {
                 card.className = 'top-card';
                 card.style.cursor = 'pointer';
                 const sNo = st.seating_no || st.s;
-                card.onclick = () => selectStudent(sNo);
+                card.onclick = (e) => {
+                    e.preventDefault();
+                    selectStudent(sNo);
+                };
                 const bName = st.branch_name || st.b || '';
+
+                let medalBadge = `#${idx + 1}`;
+                if (idx === 0) medalBadge = '🥇 #1';
+                else if (idx === 1) medalBadge = '🥈 #2';
+                else if (idx === 2) medalBadge = '🥉 #3';
+
                 card.innerHTML = `
-                    <div class="rank-badge">🏆 #${idx + 1}</div>
+                    <div class="rank-badge">${medalBadge}</div>
                     <div class="top-info">
                         <h4>${st.arabic_name || st.n}</h4>
-                        <p>رقم الجلوس: ${sNo} ${bName ? '• ' + bName : ''}</p>
+                        <p>رقم الجلوس: <strong>${sNo}</strong> ${bName ? '• ' + bName : ''}</p>
                     </div>
                     <div class="top-score">${st.total_degree || st.d} <small style="font-size:12px; color:var(--text-muted);">(${st.percentage || st.p}%)</small></div>
                 `;
@@ -848,10 +861,13 @@ async function renderTansiqPredictor(student) {
 
     // Determine target track for Tansiq
     let targetTrack = 'science_bio';
+    let trackLabel = 'شعبة علمي علوم 🧬';
     if (branchName.includes('رياض')) {
         targetTrack = 'science_math';
+        trackLabel = 'شعبة علمي رياضة 📐';
     } else if (branchName.includes('أدب') || branchName.includes('ادب')) {
         targetTrack = 'literary';
+        trackLabel = 'شعبة أدبي 📚';
     }
 
     try {
@@ -867,6 +883,10 @@ async function renderTansiqPredictor(student) {
 
             if (trackSectors.length > 0) {
                 container.style.display = 'block';
+                const subtextEl = container.querySelector('.tansiq-subtext');
+                if (subtextEl) {
+                    subtextEl.innerText = `محاكاة ذكية لاحتمالية القبول بقطاعات (${trackLabel}) بناءً على نتائج الحدود الأدنى 2023 - 2025`;
+                }
 
                 trackSectors.forEach(sec => {
                     // Probability calculation algorithm
@@ -907,24 +927,16 @@ async function renderTansiqPredictor(student) {
                     card.innerHTML = `
                         <div class="tcard-top">
                             <span class="tcard-name">${sec.name}</span>
-                            <span class="prob-badge ${badgeClass}">${probLabel} (${prob}%)</span>
-                        </div>
-                        <div class="tcard-meta">
-                            <span>متوسط التنسيق (آخر 3 سنوات): <strong>${sec.avg_pct}%</strong> | الحد الأدنى: <strong>${sec.min_pct}%</strong></span>
-                        </div>
-                        <div class="prob-bar-bg">
-                            <div class="prob-bar-fill" style="width: ${prob}%; background: ${barColor};"></div>
+                        <div class="tcard-meta" style="font-size: 11px; margin-top: 6px; color: var(--text-muted);">
+                            <span>متوسط التنسيق (3 سنوات): <strong>${sec.avg_pct}%</strong> | الحد الأدنى: <strong>${sec.min_pct}%</strong></span>
                         </div>
                     `;
                     grid.appendChild(card);
                 });
-            } else {
-                container.style.display = 'none';
             }
         }
     } catch (e) {
-        console.error('Failed to render Tansiq predictor', e);
-        container.style.display = 'none';
+        console.error('Failed to render Tansiq Predictor', e);
     }
 }
 
