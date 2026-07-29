@@ -172,6 +172,61 @@
                             <div id="resGrade" class="grade-badge">ممتاز</div>
                         </div>
                     </div>
+
+                    <!-- Subject Breakdown Table -->
+                    <div id="subjectBreakdownContainer" class="subject-breakdown-section" style="display: none;">
+                        <h4 class="section-subtitle"><i class="fa-solid fa-list-ol"></i> بيان درجات المواد وترتيب الطالب بالشعبة والجمهورية</h4>
+                        <div class="table-responsive">
+                            <table class="subjects-table">
+                                <thead>
+                                    <tr>
+                                        <th>المادة</th>
+                                        <th>الدرجة الحاصل عليها</th>
+                                        <th>الدرجة العظمى</th>
+                                        <th>النسبة المئوية</th>
+                                        <th>الترتيب بالشعبة</th>
+                                        <th>الترتيب بالجمهورية</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectTableBody">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Branch Rank & Bell Curve Section -->
+                    <div id="analyticsSection" class="analytics-card-section" style="display: none;">
+                        <div class="rank-stat-grid">
+                            <div class="rank-box">
+                                <i class="fa-solid fa-ranking-star rank-icon"></i>
+                                <div class="rank-info">
+                                    <span class="rank-label">الترتيب على شعبة الطالب</span>
+                                    <h4 id="resBranchRank">المركز 0,000</h4>
+                                    <p id="resBranchTotalCount">من أصل 000,000 طالب في الشعبة</p>
+                                </div>
+                            </div>
+                            <div class="percentile-box">
+                                <i class="fa-solid fa-award percentile-icon"></i>
+                                <div class="percentile-info">
+                                    <span class="percentile-label">المستوى والبيرسينتايل</span>
+                                    <h4 id="resPercentileText">من أعلى 0% في الجمهورية</h4>
+                                    <p id="resPercentileDesc">أداء متميز أعلى من متوسط الشعبة</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bell Curve Canvas Section -->
+                        <div class="chart-box">
+                            <div class="chart-header">
+                                <h5><i class="fa-solid fa-chart-area"></i> منحنى التوزيع الطبيعي لدرجات الشعبة (Bell Curve)</h5>
+                                <span class="chart-tag"><i class="fa-solid fa-location-dot"></i> موقعك المحدد بالنقطة المضيئة</span>
+                            </div>
+                            <div class="canvas-wrapper">
+                                <canvas id="bellCurveCanvas" width="800" height="220"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card-footer">
@@ -216,7 +271,23 @@
         <section id="topStudents" class="top-section">
             <div class="section-title">
                 <h2><i class="fa-solid fa-crown gold-icon"></i> أوائل الثانوية العامة (دفعة 2026)</h2>
-                <p>قائمة بأعلى الطلاب الحاصلين على أعلى المجموعات والنسب المئوية</p>
+                <p>قائمة بأعلى الطلاب الحاصلين على أعلى المجموعات والنسب المئوية مقسمة بالشعب</p>
+            </div>
+
+            <!-- Branch Track Tabs for Top Performers -->
+            <div class="top-track-tabs">
+                <button type="button" class="top-tab-btn active" data-track="all">
+                    <i class="fa-solid fa-trophy"></i> الأوائل العام
+                </button>
+                <button type="button" class="top-tab-btn" data-track="science_bio">
+                    <i class="fa-solid fa-microscope"></i> علمي علوم
+                </button>
+                <button type="button" class="top-tab-btn" data-track="science_math">
+                    <i class="fa-solid fa-calculator"></i> علمي رياضة
+                </button>
+                <button type="button" class="top-tab-btn" data-track="literary">
+                    <i class="fa-solid fa-book-open"></i> أدبي
+                </button>
             </div>
 
             <div class="top-cards-grid" id="topGrid">

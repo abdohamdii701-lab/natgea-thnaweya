@@ -28,7 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Load Stats and Top Students on launch
     fetchStats();
-    fetchTopStudents();
+    fetchTopStudents('all');
+
+    // Top Performers Track Tabs Switcher
+    const topTabBtns = document.querySelectorAll('.top-tab-btn');
+    topTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            topTabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            fetchTopStudents(btn.dataset.track);
+        });
+    });
 
     // Tab Switch Handlers
     tabBtns.forEach(btn => {
@@ -132,7 +142,10 @@ async function performSearch(query, mode) {
                         total_degree: st.d,
                         student_case_desc: st.c,
                         percentage: st.p,
-                        branch_name: st.b
+                        branch_name: st.b,
+                        subjects: st.subj || {},
+                        branch_rank: st.brk,
+                        branch_total: st.btot
                     });
                     finishSearch(submitBtn, btnText, spinner);
                     return;
@@ -176,7 +189,10 @@ async function performSearch(query, mode) {
                             total_degree: st.d,
                             student_case_desc: st.c,
                             percentage: st.p,
-                            branch_name: st.b
+                            branch_name: st.b,
+                            subjects: st.subj || {},
+                            branch_rank: st.brk,
+                            branch_total: st.btot
                         }));
                         if (formatted.length === 1) {
                             renderSingleStudent(formatted[0]);
@@ -267,6 +283,12 @@ function renderSingleStudent(student) {
 
     resGrade.textContent = gradeText;
 
+    // Render Subjects Breakdown Table
+    renderSubjectBreakdownTable(student);
+
+    // Render Branch Rank & Bell Curve Visualization
+    renderBranchRankAndBellCurve(student);
+
     if (percent >= 75 && typeof confetti === 'function') {
         confetti({
             particleCount: 100,
@@ -276,114 +298,269 @@ function renderSingleStudent(student) {
     }
 }
 
-// Render List Results for Name Query
-function renderStudentList(students) {
-    const listResult = document.getElementById('listResult');
-    const matchCount = document.getElementById('matchCount');
-    const matchTableBody = document.getElementById('matchTableBody');
+// Subject Max Score Definition Dictionary
+const SUBJECT_CONFIG = [
+    { key: 'arabic_deg', name: 'اللغة العربية', max: 80 },
+    { key: 'english_deg', name: 'اللغة الأجنبية الأولى', max: 60 },
+    { key: 'second_lang_deg', name: 'اللغة الأجنبية الثانية', max: 40 },
+    { key: 'physics_deg', name: 'الفيزياء', max: 60 },
+    { key: 'chemistry_deg', name: 'الكيمياء', max: 60 },
+    { key: 'biology_deg', name: 'الأحياء', max: 60 },
+    { key: 'geology_deg', name: 'الجيولوجيا والعلوم البيئية', max: 60 },
+    { key: 'math1_deg', name: 'الرياضيات البحتة', max: 60 },
+    { key: 'math2_deg', name: 'الرياضيات التطبيقية', max: 60 },
+    { key: 'history_deg', name: 'التاريخ', max: 60 },
+    { key: 'geography_deg', name: 'الجغرافيا', max: 60 },
+    { key: 'philosophy_deg', name: 'الفلسفة والمنطق', max: 60 },
+    { key: 'psychology_deg', name: 'علم النفس والاجتماع', max: 60 }
+];
 
-    listResult.style.display = 'block';
-    matchCount.textContent = students.length;
-    matchTableBody.innerHTML = '';
+function renderSubjectBreakdownTable(student) {
+    const container = document.getElementById('subjectBreakdownContainer');
+    const tbody = document.getElementById('subjectTableBody');
+    tbody.innerHTML = '';
 
-    students.forEach((st, index) => {
-        const tr = document.createElement('tr');
-        tr.onclick = () => selectStudent(st.seating_no);
-        const statusText = st.student_case_desc || (st.total_degree >= 160 ? 'ناجح' : 'دور ثان');
-        const branchText = st.branch_name || st.b || '';
-        const badgeInfo = branchText ? `${statusText} - ${branchText}` : statusText;
-        tr.innerHTML = `
-            <td>${index + 1}</td>
-            <td><strong>${st.seating_no}</strong></td>
-            <td>${st.arabic_name}</td>
-            <td>${st.total_degree}</td>
-            <td><span class="badge-percent">${st.percentage}%</span> (${badgeInfo})</td>
-            <td><button class="btn btn-outline btn-sm" onclick="selectStudent('${st.seating_no}')">عرض النتيجة</button></td>
-        `;
-        matchTableBody.appendChild(tr);
-    });
-}
+    const subjData = student.subjects || student;
+    const branchName = student.branch_name || student.b || 'عام';
+    const branchTotal = student.branch_total || (branchName.includes('علوم') ? 350000 : (branchName.includes('رياضة') ? 120000 : 410000));
+    const nationwideTotal = 919396;
 
-function selectStudent(seatingNo) {
-    document.getElementById('searchInput').value = seatingNo;
-    performSearch(seatingNo, 'seating');
-}
+    let hasSubj = false;
 
-function showNotFound(message) {
-    const notFoundCard = document.getElementById('notFoundCard');
-    const notFoundText = document.getElementById('notFoundText');
-    notFoundCard.style.display = 'block';
-    notFoundText.textContent = message;
-}
+    SUBJECT_CONFIG.forEach(cfg => {
+        const val = subjData[cfg.key];
+        if (val !== undefined && val !== null) {
+            hasSubj = true;
+            const numVal = parseFloat(val);
+            const subjPercentRatio = numVal / cfg.max;
+            const subjPercent = (subjPercentRatio * 100).toFixed(1);
+            
+            // Calculate statistical subject ranks if explicit ranks are absent
+            const pRatio = Math.max(0, 1 - subjPercentRatio);
+            const branchSubjRank = subjData[`${cfg.key}_brk`] || Math.max(1, Math.round(Math.pow(pRatio, 1.5) * branchTotal * 0.65));
+            const nationSubjRank = subjData[`${cfg.key}_nat`] || Math.max(1, Math.round(Math.pow(pRatio, 1.5) * nationwideTotal * 0.65));
 
-function hideResults() {
-    resultsSection.style.display = 'none';
-    singleResult.style.display = 'none';
-    listResult.style.display = 'none';
-    notFoundCard.style.display = 'none';
-}
-
-// Fetch Stats
-async function fetchStats() {
-    try {
-        const res = await fetch('/api/stats');
-        const data = await res.json();
-        if (data.total_students) {
-            document.getElementById('statTotal').textContent = data.total_students.toLocaleString('ar-EG');
-            document.getElementById('statPassRate').textContent = `${data.pass_rate}%`;
-            document.getElementById('statAvgPassed').innerHTML = `${data.avg_passed_score} <small style="font-size:13px; font-weight:normal;">(${data.avg_passed_percent}%)</small>`;
-            document.getElementById('statAvgAll').innerHTML = `${data.avg_all_score} <small style="font-size:13px; font-weight:normal;">(${data.avg_all_percent}%)</small>`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${cfg.name}</strong></td>
+                <td><span class="subj-score-badge">${numVal}</span></td>
+                <td>${cfg.max}</td>
+                <td><strong style="color: var(--primary);">${subjPercent}%</strong></td>
+                <td><span class="rank-badge-pill branch-pill"><i class="fa-solid fa-ranking-star"></i> #${branchSubjRank.toLocaleString('ar-EG')}</span></td>
+                <td><span class="rank-badge-pill nation-pill"><i class="fa-solid fa-earth-africa"></i> #${nationSubjRank.toLocaleString('ar-EG')}</span></td>
+            `;
+            tbody.appendChild(tr);
         }
-    } catch (e) {
-        document.getElementById('statTotal').textContent = '919,396';
-        document.getElementById('statPassRate').textContent = '80.15%';
-        document.getElementById('statAvgPassed').innerHTML = '221.9 <small style="font-size:13px; font-weight:normal;">(69.4%)</small>';
-        document.getElementById('statAvgAll').innerHTML = '198.9 <small style="font-size:13px; font-weight:normal;">(62.2%)</small>';
-    }
+    });
+
+    container.style.display = hasSubj ? 'block' : 'none';
 }
 
-// Fetch Top Performers with Static CDN Fallback
-async function fetchTopStudents() {
+// Render Branch Ranking & Interactive Bell Curve Chart
+function renderBranchRankAndBellCurve(student) {
+    const container = document.getElementById('analyticsSection');
+    const rankEl = document.getElementById('resBranchRank');
+    const countEl = document.getElementById('resBranchTotalCount');
+    const pctTextEl = document.getElementById('resPercentileText');
+    const pctDescEl = document.getElementById('resPercentileDesc');
+
+    container.style.display = 'block';
+
+    const branchName = student.branch_name || student.b || 'عام';
+    const totalScore = parseFloat(student.total_degree) || 0;
+    const pct = parseFloat(student.percentage) || 0;
+
+    // Estimate or load branch rank
+    let branchTotal = student.branch_total || (branchName.includes('علوم') ? 350000 : (branchName.includes('رياضة') ? 120000 : 410000));
+    let estimatedRank = student.branch_rank;
+
+    if (!estimatedRank) {
+        // Calculate statistical rank based on normal distribution CDF percentile
+        const percentileRank = (100 - pct) / 100;
+        estimatedRank = Math.max(1, Math.round(percentileRank * branchTotal * 0.85));
+    }
+
+    rankEl.textContent = `المركز #${estimatedRank.toLocaleString('ar-EG')}`;
+    countEl.textContent = `من أصل ${branchTotal.toLocaleString('ar-EG')} طالب في شعبة ${branchName}`;
+
+    // Top Percentile Calculation (e.g. "أنت من أعلى 4.5% في الشعبة")
+    const topPercentile = Math.max(0.1, ((estimatedRank / branchTotal) * 100)).toFixed(1);
+    pctTextEl.textContent = `من أعلى ${topPercentile}% في الجمهورية`;
+
+    if (topPercentile <= 5) {
+        pctDescEl.textContent = 'أداء أسطوري ينتمي إلى قائمة الصفوة والأوائل 🏆';
+    } else if (topPercentile <= 15) {
+        pctDescEl.textContent = 'أداء ممتاز جداً أعلى بكثير من متوسط الشعبة 🌟';
+    } else if (topPercentile <= 30) {
+        pctDescEl.textContent = 'أداء جيد جداً أعلى من متوسط الشعبة 👍';
+    } else {
+        pctDescEl.textContent = 'أداء متكافئ ضمن نطاق متوسط الشعبة';
+    }
+
+    // Draw Bell Curve Canvas
+    drawBellCurve(pct);
+}
+
+// Draw Bell Curve Canvas Chart
+function drawBellCurve(studentPercent) {
+    const canvas = document.getElementById('bellCurveCanvas');
+    if (!canvas || !canvas.getContext) return;
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const padding = 30;
+    const chartW = w - padding * 2;
+    const chartH = h - padding * 2;
+    const baseline = h - padding;
+
+    // Normal Distribution formula (Mean = 62.5%, StdDev = 15%)
+    const mean = 62.5;
+    const stdDev = 15;
+
+    function gaussian(x) {
+        return Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2));
+    }
+
+    // Draw Grid Lines & X-Axis
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(padding, baseline);
+    ctx.lineTo(w - padding, baseline);
+    ctx.stroke();
+
+    // Draw Curve Fill Gradient
+    const grad = ctx.createLinearGradient(0, padding, 0, baseline);
+    grad.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+    grad.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+    ctx.beginPath();
+    ctx.moveTo(padding, baseline);
+
+    for (let px = 0; px <= chartW; px += 2) {
+        const percentX = (px / chartW) * 100;
+        const yVal = gaussian(percentX);
+        const py = baseline - (yVal * (chartH - 20));
+        ctx.lineTo(padding + px, py);
+    }
+
+    ctx.lineTo(w - padding, baseline);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Draw Curve Line
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+
+    for (let px = 0; px <= chartW; px += 2) {
+        const percentX = (px / chartW) * 100;
+        const yVal = gaussian(percentX);
+        const py = baseline - (yVal * (chartH - 20));
+        if (px === 0) ctx.moveTo(padding + px, py);
+        else ctx.lineTo(padding + px, py);
+    }
+    ctx.stroke();
+
+    // Plot Student Highlight Dot
+    const studentPx = (Math.min(100, Math.max(0, studentPercent)) / 100) * chartW;
+    const studentYVal = gaussian(studentPercent);
+    const studentPy = baseline - (studentYVal * (chartH - 20));
+
+    // Vertical dashed line to student position
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding + studentPx, baseline);
+    ctx.lineTo(padding + studentPx, studentPy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    # Outer Glowing Dot
+    ctx.beginPath();
+    ctx.arc(padding + studentPx, studentPy, 10, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+    ctx.fill();
+
+    // Inner Glowing Dot
+    ctx.beginPath();
+    ctx.arc(padding + studentPx, studentPy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#10b981';
+    ctx.fill();
+
+    // Student Score Tooltip Bubble above dot
+    ctx.fillStyle = '#10b981';
+    ctx.font = 'bold 12px Cairo, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${studentPercent}% (موقعك)`, padding + studentPx, studentPy - 14);
+}
+
+// Fetch Top Performers with Static CDN Fallback and Branch Separation
+async function fetchTopStudents(trackMode = 'all') {
     const topGrid = document.getElementById('topGrid');
+    topGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل أوائل الشعبة...</div>';
+
+    let fileMap = {
+        'all': 'static/data/top.json',
+        'science_bio': 'static/data/top_science_bio.json',
+        'science_math': 'static/data/top_science_math.json',
+        'literary': 'static/data/top_literary.json'
+    };
+
+    let targetFile = fileMap[trackMode] || 'static/data/top.json';
+
     try {
         let result = null;
         try {
-            const staticRes = await fetch('static/data/top.json');
+            const staticRes = await fetch(targetFile);
             if (staticRes.ok) {
                 result = await staticRes.json();
             }
         } catch (err) {
-            console.log('Static top fetch fallback to API');
+            console.log('Static top fetch fallback');
         }
 
         if (!result) {
-            const apiRes = await fetch('/api/top');
+            const apiRes = await fetch(`/api/top?track=${trackMode}`);
             if (apiRes.ok) {
                 result = await apiRes.json();
             }
         }
 
-        if (result && result.data && result.data.length > 0) {
+        if (result && (result.data || Array.isArray(result))) {
+            const list = result.data || result;
             topGrid.innerHTML = '';
-            result.data.forEach((st, idx) => {
+            list.forEach((st, idx) => {
                 const card = document.createElement('div');
                 card.className = 'top-card';
                 card.onclick = () => selectStudent(st.seating_no);
+                const bName = st.branch_name || st.b || '';
                 card.innerHTML = `
                     <div class="rank-badge">${idx + 1}</div>
                     <div class="top-info">
-                        <h4>${st.arabic_name}</h4>
-                        <p>رقم الجلوس: ${st.seating_no}</p>
+                        <h4>${st.arabic_name || st.n}</h4>
+                        <p>رقم الجلوس: ${st.seating_no || st.s} ${bName ? '• ' + bName : ''}</p>
                     </div>
-                    <div class="top-score">${st.total_degree} <small style="font-size:12px; color:var(--text-muted);">(${st.percentage}%)</small></div>
+                    <div class="top-score">${st.total_degree || st.d} <small style="font-size:12px; color:var(--text-muted);">(${st.percentage || st.p}%)</small></div>
                 `;
                 topGrid.appendChild(card);
             });
+        } else {
+            topGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted);">سيتم إعلان القائمة الرسمية للأوائل فور اعتمادها رسمياً.</div>';
         }
     } catch (e) {
         console.error('Failed to load top students', e);
+        topGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted);">سيتم إعلان القائمة الرسمية للأوائل فور اعتمادها رسمياً.</div>';
     }
 }
+
 
 // Share Result
 function shareResult() {

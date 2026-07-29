@@ -1,8 +1,20 @@
 /* Natega 2026 Modern Design System */
 
+@font-face {
+    font-family: 'KOMediaBlack';
+    src: url('alfont_com_KOMedia-Black.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+* {
+    font-family: 'KOMediaBlack', 'Cairo', system-ui, sans-serif !important;
+}
+
 :root {
-    --font-primary: 'Cairo', system-ui, -apple-system, sans-serif;
-    --font-numeric: 'Outfit', 'Cairo', sans-serif;
+    --font-primary: 'KOMediaBlack', 'Cairo', system-ui, -apple-system, sans-serif;
+    --font-numeric: 'KOMediaBlack', 'Outfit', 'Cairo', sans-serif;
     
     /* Dark Theme Palette */
     --bg-dark: #090d16;
@@ -903,6 +915,240 @@ body {
     .big-score, .big-percent {
         color: #000 !important;
     }
+}
+
+/* Subject Breakdown Section */
+.subject-breakdown-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--bg-card-border);
+}
+
+.section-subtitle {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.subjects-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 14px;
+}
+
+.subjects-table th {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    padding: 12px 14px;
+    text-align: right;
+    font-weight: 700;
+    border-bottom: 2px solid var(--bg-card-border);
+}
+
+.light-theme .subjects-table th {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.subjects-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--bg-card-border);
+    color: var(--text-main);
+}
+
+.subjects-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.subj-score-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 800;
+    font-family: var(--font-numeric);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--emerald);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.rank-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 800;
+    font-family: var(--font-numeric);
+}
+
+.branch-pill {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--gold);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.nation-pill {
+    background: rgba(6, 182, 212, 0.15);
+    color: var(--blue);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+/* Analytics Card & Bell Curve Section */
+.analytics-card-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--bg-card-border);
+}
+
+.rank-stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 640px) {
+    .rank-stat-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.rank-box, .percentile-box {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--bg-card-border);
+    padding: 18px 20px;
+    border-radius: var(--radius-md);
+}
+
+.light-theme .rank-box, .light-theme .percentile-box {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.rank-icon, .percentile-icon {
+    font-size: 32px;
+    color: var(--amber);
+    flex-shrink: 0;
+}
+
+.percentile-icon {
+    color: #8b5cf6;
+}
+
+.rank-info span, .percentile-info span {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: block;
+}
+
+.rank-info h4, .percentile-info h4 {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text-main);
+    margin: 4px 0 2px 0;
+}
+
+.rank-info p, .percentile-info p {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Bell Curve Box */
+.chart-box {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--bg-card-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+}
+
+.light-theme .chart-box {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.chart-header h5 {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.canvas-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+#bellCurveCanvas {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Branch Track Tabs for Top Performers */
+.top-track-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.top-tab-btn {
+    padding: 10px 18px;
+    border-radius: 30px;
+    border: 1px solid var(--bg-card-border);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.light-theme .top-tab-btn {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.top-tab-btn:hover {
+    color: var(--text-main);
+    border-color: var(--primary);
+}
+
+.top-tab-btn.active {
+    background: linear-gradient(135deg, var(--primary), #8b5cf6);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 6px 16px var(--primary-glow);
 }
 
 /* Footer */
