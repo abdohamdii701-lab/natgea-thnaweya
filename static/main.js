@@ -78,22 +78,110 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Theme Toggle
+    // Theme Toggle (Light theme is default)
     themeToggle.addEventListener('click', () => {
         document.body.classList.toggle('light-theme');
-        const isLight = document.body.classList.contains('light-theme');
-        themeToggle.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-        localStorage.setItem('natega_theme', isLight ? 'light' : 'dark');
+        document.body.classList.toggle('dark-theme');
+        const isDark = document.body.classList.contains('dark-theme');
+        themeToggle.innerHTML = isDark ? '🌙' : '☀️';
+        localStorage.setItem('natega_theme', isDark ? 'dark' : 'light');
     });
 
-    if (localStorage.getItem('natega_theme') === 'light') {
+    if (localStorage.getItem('natega_theme') === 'dark') {
+        document.body.classList.remove('light-theme');
+        document.body.classList.add('dark-theme');
+        themeToggle.innerHTML = '🌙';
+    } else {
         document.body.classList.add('light-theme');
-        themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        document.body.classList.remove('dark-theme');
+        themeToggle.innerHTML = '☀️';
     }
 
     // Share Button Listener
     document.getElementById('shareBtn')?.addEventListener('click', shareResult);
 });
+
+// Helper: Hide all result cards
+function hideResults() {
+    const resultsSection = document.getElementById('resultsSection');
+    const singleResult = document.getElementById('singleResult');
+    const listResult = document.getElementById('listResult');
+    const notFoundCard = document.getElementById('notFoundCard');
+    if (resultsSection) resultsSection.style.display = 'none';
+    if (singleResult) singleResult.style.display = 'none';
+    if (listResult) listResult.style.display = 'none';
+    if (notFoundCard) notFoundCard.style.display = 'none';
+}
+
+// Helper: Show Not Found Card
+function showNotFound(msg) {
+    const resultsSection = document.getElementById('resultsSection');
+    const notFoundCard = document.getElementById('notFoundCard');
+    const notFoundText = document.getElementById('notFoundText');
+    hideResults();
+    if (resultsSection) resultsSection.style.display = 'block';
+    if (notFoundCard) notFoundCard.style.display = 'block';
+    if (notFoundText) notFoundText.innerText = msg || 'لم نتمكن من العثور على أية نتائج مطابقة للبحث';
+}
+
+// Helper: Render Student Search Results List
+function renderStudentList(students) {
+    const resultsSection = document.getElementById('resultsSection');
+    const listResult = document.getElementById('listResult');
+    const matchCount = document.getElementById('matchCount');
+    const tbody = document.getElementById('matchTableBody');
+    
+    hideResults();
+    if (resultsSection) resultsSection.style.display = 'block';
+    if (listResult) listResult.style.display = 'block';
+    if (matchCount) matchCount.innerText = students.length;
+
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    students.forEach((st, idx) => {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        const sNo = st.s || st.seating_no;
+        tr.onclick = () => selectStudent(sNo);
+
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td><strong>${sNo}</strong></td>
+            <td>${st.n || st.arabic_name}</td>
+            <td><strong>${st.d || st.total_degree}</strong> / 320</td>
+            <td><span class="badge-tag">${st.p || st.percentage}%</span></td>
+            <td><button class="btn btn-outline btn-sm">🔍 عرض النتيجة</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Helper: Select student from list to display full certificate
+async function selectStudent(seatingNo) {
+    const chunkKey = Math.floor(parseInt(seatingNo) / 5000) * 5000;
+    try {
+        const res = await fetch(`static/data/seating/${chunkKey}.json`);
+        if (res.ok) {
+            const chunkData = await res.json();
+            if (chunkData[seatingNo]) {
+                const st = chunkData[seatingNo];
+                renderSingleStudent({
+                    seating_no: seatingNo,
+                    arabic_name: st.n,
+                    total_degree: st.d,
+                    student_case_desc: st.c,
+                    percentage: st.p,
+                    branch_name: st.b,
+                    subjects: st.subj || {}
+                });
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('Error selecting student:', e);
+    }
+}
 
 // Arabic normalization helper in JS
 function normalizeArabicJS(text) {
