@@ -327,8 +327,11 @@ function finishSearch(submitBtn, btnText, spinner) {
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+let currentStudentData = null;
+
 // Render Single Student Result
 function renderSingleStudent(student) {
+    currentStudentData = student;
     document.getElementById('singleResult').style.display = 'block';
 
     resName.textContent = student.arabic_name;
@@ -735,6 +738,19 @@ function drawBellCurve(studentPercent, rankText = '') {
     ctx.textBaseline = 'middle';
     ctx.fillText(badgeText, badgeX + badgeW / 2, badgeY + badgeH / 2);
 }
+
+// Auto re-render Bell Curve canvas on screen resize / orientation change for 100% mobile responsiveness
+let canvasResizeTimer = null;
+window.addEventListener('resize', () => {
+    clearTimeout(canvasResizeTimer);
+    canvasResizeTimer = setTimeout(() => {
+        if (currentStudentData && document.getElementById('analyticsSection')?.style.display !== 'none') {
+            const pct = parseFloat(currentStudentData.percentage) || 0;
+            const rankText = document.getElementById('resBranchRank')?.textContent || '';
+            drawBellCurve(pct, rankText);
+        }
+    }, 150);
+});
 
 function renderSubjectBreakdownTable(student) {
     const container = document.getElementById('subjectBreakdownContainer');
