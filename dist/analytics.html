@@ -5,875 +5,908 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحليل نتيجة الثانوية العامة 2025 | إحصائيات شاملة</title>
     <meta name="description" content="تحليل شامل لنتيجة الثانوية العامة 2025 - توزيع الدرجات، نسب النجاح والرسوب، منحنيات التوزيع لكل شعبة">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css">
+
     <style>
-        :root {
-            --bg: #0b0f1a;
-            --bg2: #111827;
-            --bg3: #1a2235;
-            --card: #141c2e;
-            --card2: #1e2a40;
-            --border: rgba(99,130,210,0.15);
-            --text: #e8edf8;
-            --text2: #9aaac8;
-            --accent: #6382d2;
-            --gold: #f5c842;
-            --green: #34d399;
-            --red: #f87171;
-            --orange: #fb923c;
-            --yellow: #facc15;
-            --purple: #a78bfa;
-            --cyan: #22d3ee;
+        /* ── Analytics-specific overrides & extensions ── */
 
-            --branch-bio-color: #34d399;
-            --branch-math-color: #6382d2;
-            --branch-lit-color: #f5c842;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Cairo', 'Tajawal', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Animated background */
-        body::before {
-            content: '';
+        /* Loading overlay */
+        #loadingOverlay {
             position: fixed;
             inset: 0;
-            background:
-                radial-gradient(ellipse 80% 40% at 20% 10%, rgba(99,130,210,0.12) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 30% at 80% 80%, rgba(52,211,153,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(167,139,250,0.05) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
-
-        /* Header */
-        header {
-            background: linear-gradient(135deg, rgba(99,130,210,0.15) 0%, rgba(52,211,153,0.08) 100%);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(20px);
-            padding: 1.5rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-inner {
+            background: var(--bg-dark);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
+            justify-content: center;
+            gap: 1.5rem;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
         }
-
-        .logo-area { display: flex; align-items: center; gap: 0.75rem; }
-        .logo-icon {
-            width: 48px; height: 48px;
-            background: linear-gradient(135deg, #6382d2, #34d399);
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 0 20px rgba(99,130,210,0.4);
+        .loader-ring {
+            width: 64px; height: 64px;
+            border: 3px solid var(--bg-card-border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        .logo-text h1 { font-size: 1.3rem; font-weight: 900; color: var(--text); }
-        .logo-text p { font-size: 0.8rem; color: var(--text2); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader-text { color: var(--text-muted); font-size: 0.95rem; }
 
-        .back-btn {
-            display: flex; align-items: center; gap: 0.5rem;
-            background: rgba(99,130,210,0.15);
-            border: 1px solid var(--border);
-            color: var(--accent);
-            padding: 0.5rem 1.2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .back-btn:hover { background: rgba(99,130,210,0.3); transform: translateX(4px); }
+        /* ── Page Layout ── */
+        .analytics-main { padding-bottom: 4rem; }
 
-        /* Hero Section */
-        .hero {
-            padding: 3rem 0 2rem;
+        /* ── Hero ── */
+        .analytics-hero {
+            padding: 2.5rem 0 1.5rem;
             text-align: center;
         }
         .hero-badge {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            background: rgba(99,130,210,0.15);
-            border: 1px solid rgba(99,130,210,0.3);
-            color: var(--accent);
-            padding: 0.4rem 1rem;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 30px;
+            background: rgba(88,129,87,0.13);
+            color: var(--emerald);
+            border: 1px solid rgba(88,129,87,0.28);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
         }
-        .hero h2 {
-            font-size: clamp(1.8rem, 5vw, 3rem);
+        .pulse-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--emerald);
+            box-shadow: 0 0 8px var(--emerald);
+            animation: pulseAnim 2s ease-in-out infinite;
+        }
+        @keyframes pulseAnim { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+        .analytics-hero h2 {
+            font-size: clamp(1.6rem, 5vw, 2.6rem);
             font-weight: 900;
-            background: linear-gradient(135deg, #fff 0%, #6382d2 40%, #34d399 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
             line-height: 1.3;
             margin-bottom: 0.75rem;
         }
-        .hero p { color: var(--text2); font-size: 1.05rem; max-width: 600px; margin: 0 auto; }
+        .analytics-hero h2 span { color: var(--primary); }
+        .analytics-hero p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-        /* Total stats row */
-        .total-stats {
+        /* ── Totals Grid ── */
+        .totals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
             margin: 2rem 0;
         }
-        .stat-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
+        @media (max-width: 700px) { .totals-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 400px) { .totals-grid { grid-template-columns: 1fr 1fr; gap: 0.65rem; } }
+
+        .total-card {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-md);
+            padding: 1.4rem 1rem;
             text-align: center;
+            box-shadow: var(--shadow-subtle);
             position: relative;
             overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: var(--transition);
         }
-        .stat-card::before {
+        .total-card:hover { transform: translateY(-4px); }
+        .total-card::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 3px;
-            background: var(--card-accent, linear-gradient(90deg, #6382d2, #34d399));
+            background: var(--tc-accent, linear-gradient(90deg, var(--primary), var(--gold)));
         }
-        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-        .stat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-        .stat-value {
-            font-size: 2rem;
+        .total-card .tc-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+        .total-card .tc-val {
+            font-size: 1.7rem;
             font-weight: 900;
-            color: var(--text);
+            color: var(--text-main);
             line-height: 1;
         }
-        .stat-label { font-size: 0.85rem; color: var(--text2); margin-top: 0.35rem; }
+        .total-card .tc-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
 
-        /* Branch Tabs */
-        .branch-tabs {
+        /* ── Branch Tabs ── */
+        .branch-tabs-wrap {
             display: flex;
-            gap: 0.75rem;
             justify-content: center;
+            gap: 0.75rem;
             flex-wrap: wrap;
             margin: 2.5rem 0 1.5rem;
         }
-        .tab-btn {
-            display: flex; align-items: center; gap: 0.5rem;
-            padding: 0.65rem 1.5rem;
+        .branch-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 10px 22px;
             border-radius: 50px;
-            border: 2px solid transparent;
-            font-family: inherit;
-            font-size: 0.95rem;
+            border: 2px solid var(--bg-card-border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-family: var(--font-primary);
+            font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
-            background: var(--card);
-            color: var(--text2);
+            transition: var(--transition);
         }
-        .tab-btn[data-branch="علمي علوم"] { border-color: rgba(52,211,153,0.3); }
-        .tab-btn[data-branch="علمي رياضة"] { border-color: rgba(99,130,210,0.3); }
-        .tab-btn[data-branch="أدبي"] { border-color: rgba(245,200,66,0.3); }
-        .tab-btn.active[data-branch="علمي علوم"] { background: rgba(52,211,153,0.15); border-color: #34d399; color: #34d399; box-shadow: 0 0 20px rgba(52,211,153,0.2); }
-        .tab-btn.active[data-branch="علمي رياضة"] { background: rgba(99,130,210,0.15); border-color: #6382d2; color: #6382d2; box-shadow: 0 0 20px rgba(99,130,210,0.2); }
-        .tab-btn.active[data-branch="أدبي"] { background: rgba(245,200,66,0.15); border-color: #f5c842; color: #f5c842; box-shadow: 0 0 20px rgba(245,200,66,0.2); }
+        .branch-tab:hover { border-color: var(--primary); color: var(--text-main); }
 
-        /* Branch Panel */
+        .branch-tab.active[data-branch="علمي علوم"] {
+            border-color: var(--emerald);
+            color: var(--emerald);
+            background: rgba(88,129,87,0.12);
+            box-shadow: 0 0 18px rgba(88,129,87,0.2);
+        }
+        .branch-tab.active[data-branch="علمي رياضة"] {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(212,163,115,0.12);
+            box-shadow: 0 0 18px var(--primary-glow);
+        }
+        .branch-tab.active[data-branch="أدبي"] {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(230,197,148,0.12);
+            box-shadow: 0 0 18px var(--gold-glow);
+        }
+
+        /* ── Branch Panels ── */
         .branch-panel { display: none; animation: fadeUp 0.4s ease; }
         .branch-panel.active { display: block; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* ── Section Title ── */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--bg-card-border);
+        }
+        .section-title .st-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary-glow);
+            flex-shrink: 0;
         }
 
-        /* Pass/Fail Summary */
+        /* ── Pass/Fail Cards ── */
         .pf-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
             margin-bottom: 2rem;
         }
-        @media (max-width: 600px) { .pf-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 560px) { .pf-grid { grid-template-columns: 1fr; gap: 0.75rem; } }
 
         .pf-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-md);
+            padding: 1.5rem 1rem;
             text-align: center;
+            box-shadow: var(--shadow-subtle);
             position: relative;
             overflow: hidden;
+            transition: var(--transition);
         }
-        .pf-card.passed { border-color: rgba(52,211,153,0.3); }
-        .pf-card.second { border-color: rgba(251,146,60,0.3); }
-        .pf-card.failed { border-color: rgba(248,113,113,0.3); }
+        .pf-card:hover { transform: translateY(-3px); }
         .pf-card::after {
             content: '';
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            height: 4px;
+            height: 3px;
         }
-        .pf-card.passed::after { background: linear-gradient(90deg, #34d399, #10b981); }
-        .pf-card.second::after { background: linear-gradient(90deg, #fb923c, #f59e0b); }
-        .pf-card.failed::after { background: linear-gradient(90deg, #f87171, #ef4444); }
+        .pf-card.passed { border-color: rgba(88,129,87,0.3); }
+        .pf-card.passed::after { background: linear-gradient(90deg,#588157,#3a5a40); }
+        .pf-card.second { border-color: rgba(212,163,115,0.3); }
+        .pf-card.second::after { background: linear-gradient(90deg,var(--primary),var(--gold)); }
+        .pf-card.failed { border-color: rgba(180,80,80,0.3); }
+        .pf-card.failed::after { background: linear-gradient(90deg,#b45454,#c0392b); }
 
-        .pf-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .pf-count { font-size: 2.2rem; font-weight: 900; }
-        .pf-card.passed .pf-count { color: #34d399; }
-        .pf-card.second .pf-count { color: #fb923c; }
-        .pf-card.failed .pf-count { color: #f87171; }
-        .pf-label { color: var(--text2); font-size: 0.9rem; margin-top: 0.3rem; }
-        .pf-pct { font-size: 1.1rem; font-weight: 700; margin-top: 0.2rem; }
-        .pf-card.passed .pf-pct { color: #34d399; }
-        .pf-card.second .pf-pct { color: #fb923c; }
-        .pf-card.failed .pf-pct { color: #f87171; }
+        .pf-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .pf-count { font-size: 2rem; font-weight: 900; line-height: 1; }
+        .pf-card.passed .pf-count { color: var(--emerald); }
+        .pf-card.second .pf-count { color: var(--primary); }
+        .pf-card.failed .pf-count { color: #e07070; }
+        .pf-label { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.3rem; }
+        .pf-pct { font-size: 1.05rem; font-weight: 800; margin-top: 0.2rem; }
+        .pf-card.passed .pf-pct { color: var(--emerald); }
+        .pf-card.second .pf-pct { color: var(--primary); }
+        .pf-card.failed .pf-pct { color: #e07070; }
 
-        /* Section title */
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text2);
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .section-title::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* Bands Distribution */
-        .bands-section { margin-bottom: 2.5rem; }
+        /* ── Bands ── */
         .bands-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 0.75rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
+            margin-bottom: 2.5rem;
         }
+        @media (max-width: 600px) { .bands-grid { grid-template-columns: repeat(3, 1fr); gap: 0.6rem; } }
+        @media (max-width: 380px) { .bands-grid { grid-template-columns: repeat(2, 1fr); } }
+
         .band-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-md);
             padding: 1rem 0.75rem;
             text-align: center;
+            transition: var(--transition);
             position: relative;
             overflow: hidden;
-            transition: transform 0.2s;
         }
-        .band-card:hover { transform: translateY(-2px); }
+        .band-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-subtle); }
+        .band-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--bc-grad, linear-gradient(90deg,var(--primary),var(--gold)));
+        }
+        .band-emoji { font-size: 1.4rem; }
         .band-range {
-            font-size: 1rem;
+            font-size: 0.78rem;
             font-weight: 800;
-            margin-bottom: 0.25rem;
+            margin: 0.25rem 0 0.2rem;
+            line-height: 1.2;
         }
         .band-count {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 900;
             line-height: 1;
         }
-        .band-pct {
-            font-size: 0.8rem;
-            margin-top: 0.3rem;
-            opacity: 0.8;
-        }
+        .band-pct { font-size: 0.78rem; opacity: 0.75; margin-top: 0.2rem; }
         .band-bar-wrap {
             height: 4px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.08);
             border-radius: 2px;
             margin-top: 0.6rem;
             overflow: hidden;
         }
-        .band-bar { height: 100%; border-radius: 2px; transition: width 1s ease; }
+        .band-bar { height: 100%; border-radius: 2px; width: 0; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
 
-        /* Bell Curve Canvas */
-        .curve-section { margin-bottom: 2rem; }
+        /* ── Bell Curve ── */
         .curve-wrap {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
-            position: relative;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 2.5rem;
         }
         .curve-wrap canvas {
             width: 100%;
             height: auto;
             display: block;
+            border-radius: var(--radius-sm);
+        }
+        .curve-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .curve-title { font-size: 0.95rem; font-weight: 800; }
+        .curve-peak-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border: 1px solid var(--bg-card-border);
+            background: rgba(0,0,0,0.15);
+            color: var(--text-muted);
         }
 
-        /* Compare Section (all 3 at once) */
-        .compare-section { margin: 3rem 0; }
+        /* ── Compare Section ── */
+        .compare-section { margin: 1rem 0 2rem; }
         .compare-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.2rem;
         }
         .compare-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-md);
             padding: 1.5rem;
-            position: relative;
-            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+            transition: var(--transition);
         }
-        .compare-card .branch-label {
-            font-size: 1.1rem;
-            font-weight: 800;
-            margin-bottom: 1rem;
+        .compare-card:hover { transform: translateY(-3px); }
+        .compare-branch-label {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 900;
+            margin-bottom: 1.1rem;
         }
-        .compare-card .branch-label .dot {
+        .compare-branch-label .color-dot {
             width: 10px; height: 10px;
             border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .compare-total-badge {
+            margin-right: auto;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(0,0,0,0.15);
+            padding: 2px 10px;
+            border-radius: 20px;
         }
 
-        /* Horizontal bar chart */
-        .hbar-list { display: flex; flex-direction: column; gap: 0.6rem; }
-        .hbar-row { display: flex; align-items: center; gap: 0.75rem; }
-        .hbar-label { font-size: 0.85rem; color: var(--text2); width: 80px; flex-shrink: 0; text-align: left; direction: ltr; }
+        .hbar-list { display: flex; flex-direction: column; gap: 0.55rem; }
+        .hbar-row { display: flex; align-items: center; gap: 0.6rem; }
+        .hbar-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            width: 78px;
+            flex-shrink: 0;
+            direction: ltr;
+            text-align: left;
+        }
         .hbar-track {
             flex: 1;
-            height: 28px;
-            background: rgba(255,255,255,0.05);
+            height: 22px;
+            background: rgba(255,255,255,0.06);
             border-radius: 6px;
             overflow: hidden;
-            position: relative;
         }
         .hbar-fill {
             height: 100%;
             border-radius: 6px;
             display: flex;
             align-items: center;
-            padding-right: 8px;
             justify-content: flex-end;
-            font-size: 0.75rem;
+            padding-right: 8px;
+            font-size: 0.72rem;
             font-weight: 700;
             color: rgba(255,255,255,0.9);
-            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0;
+            transition: width 1.1s cubic-bezier(0.4,0,0.2,1);
             white-space: nowrap;
         }
-        .hbar-num { font-size: 0.8rem; color: var(--text2); width: 70px; flex-shrink: 0; text-align: left; direction: ltr; }
+        .hbar-num {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            width: 62px;
+            flex-shrink: 0;
+            direction: ltr;
+            text-align: left;
+        }
+
+        /* ── Dark theme overrides for backgrounds & cards ── */
+        body { background-color: var(--bg-dark); }
+        body.dark-analytics { background-color: var(--bg-dark); }
 
         /* Footer */
-        footer {
+        .analytics-footer {
+            border-top: 1px solid var(--bg-card-border);
+            padding: 2.5rem 0;
             text-align: center;
-            padding: 3rem 1rem 2rem;
-            color: var(--text2);
+            color: var(--text-muted);
             font-size: 0.85rem;
-            border-top: 1px solid var(--border);
-            margin-top: 4rem;
         }
+        .analytics-footer strong { color: var(--primary); }
 
-        /* Loading */
-        #loadingOverlay {
-            position: fixed;
-            inset: 0;
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
-            z-index: 999;
-            transition: opacity 0.5s;
+        /* Responsive header tweak */
+        @media (max-width: 500px) {
+            .analytics-hero h2 { font-size: 1.5rem; }
+            .total-card .tc-val { font-size: 1.3rem; }
+            .pf-count { font-size: 1.5rem; }
         }
-        .loader-ring {
-            width: 60px; height: 60px;
-            border: 3px solid rgba(99,130,210,0.2);
-            border-top-color: #6382d2;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h2 { font-size: 1.8rem; }
-            .total-stats { grid-template-columns: repeat(2, 1fr); }
-        }
-        @media (max-width: 480px) {
-            .total-stats { grid-template-columns: 1fr 1fr; }
-            .bands-grid { grid-template-columns: repeat(3, 1fr); }
-            .band-count { font-size: 1.2rem; }
-        }
-
-        /* Number counter animation */
-        .count-up { display: inline-block; }
-
-        .glow-dot {
-            display: inline-block;
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: #34d399;
-            box-shadow: 0 0 8px #34d399;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
     </style>
 </head>
 <body>
-    <div id="loadingOverlay">
-        <div class="loader-ring"></div>
-        <p style="color: var(--text2); font-size: 1rem;">جاري تحميل الإحصائيات...</p>
+    <!-- Same glow blobs as main site -->
+    <div class="glow-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
     </div>
 
-    <header>
-        <div class="container header-inner">
-            <div class="logo-area">
+    <!-- Loading -->
+    <div id="loadingOverlay">
+        <div class="loader-ring"></div>
+        <p class="loader-text">جاري تحميل الإحصائيات...</p>
+    </div>
+
+    <!-- Header — identical structure to main site -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
                 <div class="logo-icon">📊</div>
                 <div class="logo-text">
-                    <h1>تحليل نتيجة 2025</h1>
-                    <p>إحصائيات شاملة • ثانوية عامة</p>
+                    <h1>تحليل النتيجة <span>2025</span></h1>
+                    <p class="subtitle">إحصائيات شاملة • ثانوية عامة</p>
                 </div>
             </div>
-            <a href="index.html" class="back-btn">🔍 ابحث عن نتيجتك ←</a>
+            <div class="header-actions">
+                <button id="themeToggle" class="icon-btn" title="تبديل المظهر">🌙</button>
+                <a href="index.html" class="btn btn-outline">🔍 استعلام نتيجة</a>
+            </div>
         </div>
     </header>
 
-    <div class="container">
-        <section class="hero">
-            <div class="hero-badge"><span class="glow-dot"></span> بيانات حقيقية ومحدّثة</div>
-            <h2>إحصائيات نتيجة الثانوية العامة</h2>
-            <p>تحليل شامل لأداء طلاب الثانوية العامة 2025 — توزيع الدرجات، نسب النجاح والرسوب، ومنحنيات التوزيع لكل شعبة</p>
+    <!-- Main -->
+    <main class="container analytics-main">
+
+        <!-- Hero -->
+        <section class="analytics-hero">
+            <div class="hero-badge">
+                <span class="pulse-dot"></span>
+                بيانات حقيقية من 914,945 طالب
+            </div>
+            <h2>إحصائيات نتيجة <span>الثانوية العامة</span></h2>
+            <p>تحليل موزّع لأداء الطلاب — توزيع الدرجات، نسب النجاح، والمنحنيات الإحصائية لكل شعبة</p>
         </section>
 
-        <!-- Overall Stats -->
-        <div class="total-stats" id="totalStats">
-            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#6382d2,#a78bfa)">
-                <div class="stat-icon">🎓</div>
-                <div class="stat-value count-up" data-target="0" id="totalStudents">—</div>
-                <div class="stat-label">إجمالي الطلاب</div>
+        <!-- Total Stats -->
+        <div class="totals-grid">
+            <div class="total-card" style="--tc-accent:linear-gradient(90deg,var(--primary),var(--gold))">
+                <div class="tc-icon">🎓</div>
+                <div class="tc-val" id="totalStudents">—</div>
+                <div class="tc-label">إجمالي الطلاب</div>
             </div>
-            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#34d399,#10b981)">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value count-up" data-target="0" id="totalPassed">—</div>
-                <div class="stat-label">ناجح دور أول</div>
+            <div class="total-card" style="--tc-accent:linear-gradient(90deg,#588157,#3a5a40)">
+                <div class="tc-icon">✅</div>
+                <div class="tc-val" id="totalPassed">—</div>
+                <div class="tc-label">ناجح دور أول</div>
             </div>
-            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#fb923c,#f59e0b)">
-                <div class="stat-icon">📝</div>
-                <div class="stat-value count-up" data-target="0" id="totalSecond">—</div>
-                <div class="stat-label">دور ثانٍ</div>
+            <div class="total-card" style="--tc-accent:linear-gradient(90deg,var(--primary),var(--crimson))">
+                <div class="tc-icon">📝</div>
+                <div class="tc-val" id="totalSecond">—</div>
+                <div class="tc-label">دور ثانٍ</div>
             </div>
-            <div class="stat-card" style="--card-accent: linear-gradient(90deg,#f87171,#ef4444)">
-                <div class="stat-icon">❌</div>
-                <div class="stat-value count-up" data-target="0" id="totalFailed">—</div>
-                <div class="stat-label">راسب دور أول</div>
+            <div class="total-card" style="--tc-accent:linear-gradient(90deg,#b45454,#c0392b)">
+                <div class="tc-icon">❌</div>
+                <div class="tc-val" id="totalFailed">—</div>
+                <div class="tc-label">راسب دور أول</div>
             </div>
         </div>
 
         <!-- Branch Tabs -->
-        <div class="branch-tabs">
-            <button class="tab-btn active" data-branch="علمي علوم" onclick="switchBranch('علمي علوم', this)">
+        <div class="branch-tabs-wrap">
+            <button class="branch-tab active" data-branch="علمي علوم" onclick="switchBranch('علمي علوم', this)">
                 🔬 علمي علوم
             </button>
-            <button class="tab-btn" data-branch="علمي رياضة" onclick="switchBranch('علمي رياضة', this)">
+            <button class="branch-tab" data-branch="علمي رياضة" onclick="switchBranch('علمي رياضة', this)">
                 📐 علمي رياضة
             </button>
-            <button class="tab-btn" data-branch="أدبي" onclick="switchBranch('أدبي', this)">
+            <button class="branch-tab" data-branch="أدبي" onclick="switchBranch('أدبي', this)">
                 📚 أدبي
             </button>
         </div>
 
-        <!-- Branch Panels -->
+        <!-- Branch Panels (injected by JS) -->
         <div id="panel-علمي علوم" class="branch-panel active"></div>
         <div id="panel-علمي رياضة" class="branch-panel"></div>
         <div id="panel-أدبي" class="branch-panel"></div>
 
-        <!-- Compare All Branches -->
+        <!-- Compare -->
         <section class="compare-section">
-            <div class="section-title">📊 مقارنة الشعب</div>
+            <div class="section-title"><span class="st-dot"></span>📊 مقارنة توزيع الدرجات — الشعب الثلاث</div>
             <div class="compare-grid" id="compareGrid"></div>
         </section>
-    </div>
 
-    <footer>
-        <p>📊 بيانات مستخرجة من النتيجة الرسمية 2025 | تحليل شامل لـ <strong id="footerTotal">—</strong> طالب</p>
-        <p style="margin-top:0.5rem; opacity:0.6">جميع الأرقام دقيقة ومستخرجة مباشرة من قاعدة البيانات الرسمية</p>
+    </main>
+
+    <footer class="analytics-footer">
+        <div class="container">
+            <p>📊 بيانات مستخرجة من النتيجة الرسمية 2025 | تحليل شامل لـ <strong id="footerTotal">—</strong> طالب</p>
+            <p style="margin-top:0.5rem;opacity:0.6">جميع الأرقام دقيقة ومستخرجة مباشرة من قاعدة البيانات الرسمية</p>
+        </div>
     </footer>
 
-    <script>
-    let analyticsData = null;
+<script>
+// ── Config ──────────────────────────────────────────
+const BRANCH_CFG = {
+    'علمي علوم':  { icon:'🔬', colorVar:'var(--emerald)',  rawColor:'#588157', grad:'linear-gradient(135deg,#588157,#3a5a40)',  dotHex:'#588157' },
+    'علمي رياضة': { icon:'📐', colorVar:'var(--primary)',  rawColor:'#d4a373', grad:'linear-gradient(135deg,#d4a373,#9c6638)',  dotHex:'#d4a373' },
+    'أدبي':        { icon:'📚', colorVar:'var(--gold)',     rawColor:'#e6c594', grad:'linear-gradient(135deg,#e6c594,#b8913a)',  dotHex:'#e6c594' }
+};
 
-    const BRANCH_CONFIG = {
-        'علمي علوم': { color: '#34d399', gradient: 'linear-gradient(135deg, #34d399, #10b981)', icon: '🔬', dot: '#34d399' },
-        'علمي رياضة': { color: '#6382d2', gradient: 'linear-gradient(135deg, #6382d2, #818cf8)', icon: '📐', dot: '#6382d2' },
-        'أدبي': { color: '#f5c842', gradient: 'linear-gradient(135deg, #f5c842, #f59e0b)', icon: '📚', dot: '#f5c842' }
+const BAND_CFG = [
+    { key:'above_90', label:'فوق 90%',   emoji:'🏆', grad:'linear-gradient(135deg,#588157,#3a5a40)',  raw:'#588157' },
+    { key:'b80_90',   label:'80 – 90%',  emoji:'⭐', grad:'linear-gradient(135deg,#d4a373,#bc8a5f)',  raw:'#d4a373' },
+    { key:'b70_80',   label:'70 – 80%',  emoji:'📘', grad:'linear-gradient(135deg,#a3b18a,#6b7f5a)',  raw:'#a3b18a' },
+    { key:'b60_70',   label:'60 – 70%',  emoji:'📗', grad:'linear-gradient(135deg,#cb997e,#a0704d)',  raw:'#cb997e' },
+    { key:'b50_60',   label:'50 – 60%',  emoji:'📙', grad:'linear-gradient(135deg,#e6c594,#b8913a)',  raw:'#e6c594' },
+    { key:'below_50', label:'أقل 50%',   emoji:'📕', grad:'linear-gradient(135deg,#b45454,#8b2e2e)',  raw:'#b45454' }
+];
+
+let analyticsData = null;
+
+// ── Helpers ─────────────────────────────────────────
+function fmtAr(n) { return Number(n).toLocaleString('ar-EG'); }
+
+function animateCount(el, target, dur = 1300) {
+    const start = performance.now();
+    const tick = (now) => {
+        const p = Math.min((now - start) / dur, 1);
+        const e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * e).toLocaleString('ar-EG');
+        if (p < 1) requestAnimationFrame(tick);
     };
+    requestAnimationFrame(tick);
+}
 
-    const BAND_CONFIG = [
-        { key: 'above_90', label: '90% فأكثر', color: '#34d399', gradient: 'linear-gradient(90deg,#34d399,#10b981)', emoji: '🏆' },
-        { key: 'b80_90', label: '80% – 90%', color: '#22d3ee', gradient: 'linear-gradient(90deg,#22d3ee,#06b6d4)', emoji: '⭐' },
-        { key: 'b70_80', label: '70% – 80%', color: '#6382d2', gradient: 'linear-gradient(90deg,#6382d2,#818cf8)', emoji: '📘' },
-        { key: 'b60_70', label: '60% – 70%', color: '#a78bfa', gradient: 'linear-gradient(90deg,#a78bfa,#7c3aed)', emoji: '📗' },
-        { key: 'b50_60', label: '50% – 60%', color: '#fb923c', gradient: 'linear-gradient(90deg,#fb923c,#f59e0b)', emoji: '📙' },
-        { key: 'below_50', label: 'أقل من 50%', color: '#f87171', gradient: 'linear-gradient(90deg,#f87171,#ef4444)', emoji: '📕' }
-    ];
+// ── Dark / Light Theme (same logic as main site) ────
+function applyTheme(dark) {
+    document.body.classList.toggle('light-theme', !dark);
+    document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙';
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+    const isLight = document.body.classList.contains('light-theme');
+    applyTheme(isLight); // toggle
+    localStorage.setItem('theme', isLight ? 'dark' : 'light');
+});
+// Restore saved theme
+(function() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') applyTheme(true);
+    else applyTheme(false); // default light like main site
+})();
 
-    function fmtNum(n) {
-        return Number(n).toLocaleString('ar-EG');
+// ── Canvas Bell Curve ────────────────────────────────
+function drawCurve(canvas, curveData, rawColor) {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const W = rect.width || canvas.offsetWidth || 600;
+    const isMobile = W < 500;
+    const H = isMobile ? 210 : (W < 720 ? 260 : 300);
+
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.height = H + 'px';
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+
+    if (!curveData || curveData.length < 2) return;
+
+    const pL = isMobile ? 10 : 48;
+    const pR = isMobile ? 10 : 24;
+    const pT = 34;
+    const pB = isMobile ? 32 : 46;
+    const plotW = W - pL - pR;
+    const plotH = H - pT - pB;
+
+    const counts = curveData.map(d => d[1]);
+    const maxC   = Math.max(...counts);
+    const minPct = curveData[0][0];
+    const maxPct = curveData[curveData.length - 1][0];
+    const pctRange = maxPct - minPct || 1;
+
+    const toX = p => pL + ((p - minPct) / pctRange) * plotW;
+    const toY = c => pT + plotH - (c / maxC) * plotH;
+
+    // Detect light / dark
+    const isLight = document.body.classList.contains('light-theme');
+
+    // Grid horizontals
+    ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    [0.25, 0.5, 0.75, 1].forEach(f => {
+        const y = pT + plotH * (1 - f);
+        ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(pL + plotW, y); ctx.stroke();
+    });
+
+    // Grid verticals (major %)
+    const vTicks = isMobile ? [0, 25, 50, 75, 100] : [0, 25, 50, 60, 70, 75, 80, 90, 100];
+    ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.04)';
+    vTicks.forEach(pct => {
+        const x = toX(pct);
+        if (x >= pL && x <= pL + plotW) {
+            ctx.beginPath(); ctx.moveTo(x, pT); ctx.lineTo(x, pT + plotH); ctx.stroke();
+        }
+    });
+
+    // Fill gradient
+    const grad = ctx.createLinearGradient(0, pT, 0, pT + plotH);
+    grad.addColorStop(0, rawColor + '55');
+    grad.addColorStop(0.6, rawColor + '22');
+    grad.addColorStop(1, rawColor + '04');
+    ctx.beginPath();
+    ctx.moveTo(toX(curveData[0][0]), pT + plotH);
+    curveData.forEach(([p, c]) => ctx.lineTo(toX(p), toY(c)));
+    ctx.lineTo(toX(curveData[curveData.length - 1][0]), pT + plotH);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Smooth curve line
+    ctx.beginPath();
+    ctx.moveTo(toX(curveData[0][0]), toY(curveData[0][1]));
+    for (let i = 1; i < curveData.length; i++) {
+        const [px, py] = curveData[i - 1];
+        const [cx, cy] = curveData[i];
+        const mx = (toX(px) + toX(cx)) / 2;
+        ctx.bezierCurveTo(mx, toY(py), mx, toY(cy), toX(cx), toY(cy));
+    }
+    ctx.strokeStyle = rawColor;
+    ctx.lineWidth = isMobile ? 2 : 2.5;
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = rawColor;
+    ctx.shadowBlur = 10;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // X-axis line
+    ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pL, pT + plotH); ctx.lineTo(pL + plotW, pT + plotH); ctx.stroke();
+
+    // Tick labels
+    const textColor = isLight ? 'rgba(80,60,40,0.65)' : 'rgba(210,195,175,0.65)';
+    ctx.fillStyle = textColor;
+    ctx.font = `${isMobile ? 9 : 10}px Cairo, sans-serif`;
+    ctx.textAlign = 'center';
+    const labelTicks = isMobile ? [0, 25, 50, 75, 100] : [0, 25, 50, 70, 80, 90, 100];
+    labelTicks.forEach(pct => {
+        const x = toX(pct);
+        if (x >= pL - 5 && x <= pL + plotW + 5) {
+            ctx.fillText(pct + '%', x, pT + plotH + (isMobile ? 14 : 18));
+        }
+    });
+
+    // Y-axis label
+    if (!isMobile) {
+        ctx.save();
+        ctx.translate(14, pT + plotH / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.font = '9px Cairo, sans-serif';
+        ctx.fillStyle = textColor;
+        ctx.textAlign = 'center';
+        ctx.fillText('عدد الطلاب', 0, 0);
+        ctx.restore();
     }
 
-    function animateCount(el, target, duration = 1200) {
-        const start = performance.now();
-        const update = (now) => {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            const current = Math.round(target * eased);
-            el.textContent = current.toLocaleString('ar-EG');
-            if (progress < 1) requestAnimationFrame(update);
-        };
-        requestAnimationFrame(update);
-    }
+    // Peak dot + label
+    const peakIdx = counts.indexOf(maxC);
+    const [peakP, peakC] = curveData[peakIdx];
+    const px2 = toX(peakP), py2 = toY(peakC);
 
-    function drawBranchCurve(canvas, curveData, branchColor) {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        const W = rect.width || canvas.offsetWidth || 600;
-        const H = W < 400 ? 220 : (W < 600 ? 260 : 320);
+    ctx.beginPath();
+    ctx.arc(px2, py2, isMobile ? 4 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = rawColor;
+    ctx.shadowColor = rawColor;
+    ctx.shadowBlur = 14;
+    ctx.fill();
+    ctx.shadowBlur = 0;
 
-        canvas.width = W * dpr;
-        canvas.height = H * dpr;
-        canvas.style.height = H + 'px';
+    // Peak callout
+    const labelX = Math.max(pL + 30, Math.min(px2, pL + plotW - 30));
+    const labelY = Math.max(pT + 16, py2 - 14);
+    ctx.fillStyle = isLight ? 'rgba(40,20,10,0.75)' : 'rgba(255,240,220,0.85)';
+    ctx.font = `bold ${isMobile ? 9 : 10}px Cairo, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`ذروة ${peakP.toFixed(1)}%`, labelX, labelY);
+}
 
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, W, H);
+// ── Build Branch Panel ───────────────────────────────
+function buildPanel(branch, data) {
+    const cfg = BRANCH_CFG[branch];
+    const total = data.total;
+    const allBandTotal = Object.values(data.bands).reduce((a, b) => a + b, 0) || 1;
+    const passedPct  = ((data.passed       / total) * 100).toFixed(1);
+    const secondPct  = ((data.second_round / total) * 100).toFixed(1);
+    const failedPct  = ((data.failed       / total) * 100).toFixed(1);
 
-        const isMobile = W < 500;
-        const padL = isMobile ? 12 : 50;
-        const padR = isMobile ? 12 : 30;
-        const padT = 30;
-        const padB = isMobile ? 36 : 50;
+    const bandsHTML = BAND_CFG.map(bc => {
+        const count = data.bands[bc.key] || 0;
+        const pct   = ((count / allBandTotal) * 100).toFixed(1);
+        return `<div class="band-card" style="border-color:${bc.raw}33;--bc-grad:${bc.grad}">
+            <div class="band-emoji">${bc.emoji}</div>
+            <div class="band-range" style="color:${bc.raw}">${bc.label}</div>
+            <div class="band-count" style="color:${bc.raw}">${fmtAr(count)}</div>
+            <div class="band-pct" style="color:${bc.raw}">${pct}%</div>
+            <div class="band-bar-wrap">
+                <div class="band-bar" style="background:${bc.grad}" data-width="${pct}"></div>
+            </div>
+        </div>`;
+    }).join('');
 
-        const plotW = W - padL - padR;
-        const plotH = H - padT - padB;
+    const canvasId = `cv-${branch.replace(/ /g, '_')}`;
 
-        if (!curveData || curveData.length === 0) return;
+    document.getElementById(`panel-${branch}`).innerHTML = `
+    <div class="section-title"><span class="st-dot" style="background:${cfg.rawColor};box-shadow:0 0 8px ${cfg.rawColor}66"></span>📋 ملخص النتيجة — ${cfg.icon} ${branch}</div>
+    <div class="pf-grid">
+        <div class="pf-card passed">
+            <div class="pf-icon">🎉</div>
+            <div class="pf-count">${fmtAr(data.passed)}</div>
+            <div class="pf-label">ناجح دور أول</div>
+            <div class="pf-pct">${passedPct}%</div>
+        </div>
+        <div class="pf-card second">
+            <div class="pf-icon">📝</div>
+            <div class="pf-count">${fmtAr(data.second_round)}</div>
+            <div class="pf-label">دور ثانٍ</div>
+            <div class="pf-pct">${secondPct}%</div>
+        </div>
+        <div class="pf-card failed">
+            <div class="pf-icon">😔</div>
+            <div class="pf-count">${fmtAr(data.failed)}</div>
+            <div class="pf-label">راسب دور أول</div>
+            <div class="pf-pct">${failedPct}%</div>
+        </div>
+    </div>
 
-        const maxCount = Math.max(...curveData.map(d => d[1]));
-        const minPct = curveData[0][0];
-        const maxPct = curveData[curveData.length - 1][0];
-        const pctRange = maxPct - minPct || 1;
+    <div class="section-title"><span class="st-dot" style="background:${cfg.rawColor}"></span>🎯 توزيع الطلاب حسب نسبة الدرجات</div>
+    <div class="bands-grid" style="margin-bottom:2.5rem">${bandsHTML}</div>
 
-        const toX = (p) => padL + ((p - minPct) / pctRange) * plotW;
-        const toY = (c) => padT + plotH - (c / maxCount) * plotH;
+    <div class="section-title"><span class="st-dot" style="background:${cfg.rawColor}"></span>📈 منحنى توزيع الدرجات</div>
+    <div class="curve-wrap">
+        <div class="curve-header">
+            <span class="curve-title">${cfg.icon} ${branch} — ${fmtAr(total)} طالب</span>
+            <span class="curve-peak-badge" id="peak-${canvasId}">جاري الحساب...</span>
+        </div>
+        <canvas id="${canvasId}"></canvas>
+    </div>`;
+}
 
-        // Grid lines
-        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-        ctx.lineWidth = 1;
-        [0, 25, 50, 75, 100].forEach(pct => {
-            const x = padL + ((pct - minPct) / pctRange) * plotW;
-            if (x >= padL && x <= padL + plotW) {
-                ctx.beginPath();
-                ctx.moveTo(x, padT);
-                ctx.lineTo(x, padT + plotH);
-                ctx.stroke();
-            }
-        });
-        [0.25, 0.5, 0.75, 1].forEach(frac => {
-            const y = padT + plotH * (1 - frac);
-            ctx.beginPath();
-            ctx.moveTo(padL, y);
-            ctx.lineTo(padL + plotW, y);
-            ctx.stroke();
-        });
+// ── Build Compare Grid ───────────────────────────────
+function buildCompare() {
+    const branches = ['علمي علوم', 'علمي رياضة', 'أدبي'];
+    document.getElementById('compareGrid').innerHTML = branches.map(branch => {
+        const d   = analyticsData[branch];
+        const cfg = BRANCH_CFG[branch];
+        const maxBand = Math.max(...BAND_CFG.map(bc => d.bands[bc.key] || 0)) || 1;
 
-        // Gradient fill under curve
-        const grad = ctx.createLinearGradient(0, padT, 0, padT + plotH);
-        grad.addColorStop(0, branchColor + '55');
-        grad.addColorStop(1, branchColor + '05');
-
-        ctx.beginPath();
-        ctx.moveTo(toX(curveData[0][0]), toY(0));
-        curveData.forEach(([p, c]) => ctx.lineTo(toX(p), toY(c)));
-        ctx.lineTo(toX(curveData[curveData.length - 1][0]), toY(0));
-        ctx.closePath();
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        // Curve line
-        ctx.beginPath();
-        ctx.moveTo(toX(curveData[0][0]), toY(curveData[0][1]));
-        for (let i = 1; i < curveData.length; i++) {
-            const prev = curveData[i - 1];
-            const curr = curveData[i];
-            const cpx = (toX(prev[0]) + toX(curr[0])) / 2;
-            ctx.bezierCurveTo(cpx, toY(prev[1]), cpx, toY(curr[1]), toX(curr[0]), toY(curr[1]));
-        }
-        ctx.strokeStyle = branchColor;
-        ctx.lineWidth = isMobile ? 2 : 2.5;
-        ctx.lineJoin = 'round';
-        ctx.stroke();
-
-        // Glow effect
-        ctx.shadowColor = branchColor;
-        ctx.shadowBlur = 10;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
-
-        // X Axis
-        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(padL, padT + plotH);
-        ctx.lineTo(padL + plotW, padT + plotH);
-        ctx.stroke();
-
-        // X ticks
-        if (!isMobile) {
-            const ticks = [0, 25, 50, 60, 70, 75, 80, 90, 100];
-            ctx.fillStyle = 'rgba(150,170,200,0.7)';
-            ctx.font = '11px Cairo, sans-serif';
-            ctx.textAlign = 'center';
-            ticks.forEach(pct => {
-                const x = padL + ((pct - minPct) / pctRange) * plotW;
-                if (x >= padL && x <= padL + plotW) {
-                    ctx.fillText(pct + '%', x, padT + plotH + 18);
-                }
-            });
-        } else {
-            const ticks = [0, 50, 75, 100];
-            ctx.fillStyle = 'rgba(150,170,200,0.7)';
-            ctx.font = '10px Cairo, sans-serif';
-            ctx.textAlign = 'center';
-            ticks.forEach(pct => {
-                const x = padL + ((pct - minPct) / pctRange) * plotW;
-                if (x >= padL && x <= padL + plotW) {
-                    ctx.fillText(pct + '%', x, padT + plotH + 16);
-                }
-            });
-        }
-
-        // Peak annotation
-        const peak = curveData.reduce((a, b) => b[1] > a[1] ? b : a);
-        const px = toX(peak[0]);
-        const py = toY(peak[1]);
-        ctx.beginPath();
-        ctx.arc(px, py, 5, 0, Math.PI * 2);
-        ctx.fillStyle = branchColor;
-        ctx.fill();
-        ctx.shadowColor = branchColor;
-        ctx.shadowBlur = 12;
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        if (!isMobile) {
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.font = 'bold 11px Cairo, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(`ذروة: ${peak[0]}%`, px, py - 12);
-        }
-    }
-
-    function buildBranchPanel(branch, data) {
-        const cfg = BRANCH_CONFIG[branch];
-        const total = data.total;
-        const bands = data.bands;
-        const allBandTotal = Object.values(bands).reduce((a, b) => a + b, 0) || total;
-
-        let bandsHTML = BAND_CONFIG.map(bc => {
-            const count = bands[bc.key] || 0;
-            const pct = ((count / allBandTotal) * 100).toFixed(1);
-            return `
-            <div class="band-card" style="border-color: ${bc.color}22">
-                <div class="band-range" style="color:${bc.color}">${bc.emoji} ${bc.label}</div>
-                <div class="band-count" style="color:${bc.color}" data-target="${count}">${fmtNum(count)}</div>
-                <div class="band-pct" style="color:${bc.color}">${pct}%</div>
-                <div class="band-bar-wrap">
-                    <div class="band-bar" style="width:0%; background:${bc.gradient}" data-width="${pct}"></div>
+        const bars = BAND_CFG.map(bc => {
+            const count = d.bands[bc.key] || 0;
+            const barW  = ((count / maxBand) * 100).toFixed(1);
+            const ofTot = ((count / d.total) * 100).toFixed(1);
+            return `<div class="hbar-row">
+                <span class="hbar-label" style="color:${bc.raw}">${bc.label}</span>
+                <div class="hbar-track">
+                    <div class="hbar-fill" style="background:${bc.grad}" data-width="${barW}">${ofTot}%</div>
                 </div>
+                <span class="hbar-num">${fmtAr(count)}</span>
             </div>`;
         }).join('');
 
-        const passedPct = ((data.passed / total) * 100).toFixed(1);
-        const secondPct = ((data.second_round / total) * 100).toFixed(1);
-        const failedPct = ((data.failed / total) * 100).toFixed(1);
-
-        const panel = document.getElementById(`panel-${branch}`);
-        panel.innerHTML = `
-        <div class="pf-grid">
-            <div class="pf-card passed">
-                <div class="pf-icon">🎉</div>
-                <div class="pf-count">${fmtNum(data.passed)}</div>
-                <div class="pf-label">ناجح دور أول</div>
-                <div class="pf-pct">${passedPct}%</div>
+        return `<div class="compare-card" style="border-color:${cfg.rawColor}44">
+            <div class="compare-branch-label">
+                <span class="color-dot" style="background:${cfg.rawColor};box-shadow:0 0 8px ${cfg.rawColor}88"></span>
+                ${cfg.icon} ${branch}
+                <span class="compare-total-badge">${fmtAr(d.total)} طالب</span>
             </div>
-            <div class="pf-card second">
-                <div class="pf-icon">📝</div>
-                <div class="pf-count">${fmtNum(data.second_round)}</div>
-                <div class="pf-label">دور ثانٍ</div>
-                <div class="pf-pct">${secondPct}%</div>
-            </div>
-            <div class="pf-card failed">
-                <div class="pf-icon">😔</div>
-                <div class="pf-count">${fmtNum(data.failed)}</div>
-                <div class="pf-label">راسب دور أول</div>
-                <div class="pf-pct">${failedPct}%</div>
-            </div>
-        </div>
+            <div class="hbar-list">${bars}</div>
+        </div>`;
+    }).join('');
+}
 
-        <div class="bands-section">
-            <div class="section-title">🎯 توزيع الطلاب حسب نسبة الدرجات</div>
-            <div class="bands-grid">${bandsHTML}</div>
-        </div>
+// ── Animate bars ─────────────────────────────────────
+function animBars() {
+    document.querySelectorAll('[data-width]').forEach(el => {
+        setTimeout(() => { el.style.width = el.dataset.width + '%'; }, 80);
+    });
+}
 
-        <div class="curve-section">
-            <div class="section-title">📈 منحنى توزيع الدرجات — ${branch}</div>
-            <div class="curve-wrap">
-                <canvas id="curve-${branch.replace(/ /g,'-')}" style="width:100%;display:block;"></canvas>
-            </div>
-        </div>
-        `;
-    }
+// ── Draw all visible curves ───────────────────────────
+function drawAll() {
+    ['علمي علوم', 'علمي رياضة', 'أدبي'].forEach(branch => {
+        const id = `cv-${branch.replace(/ /g, '_')}`;
+        const canvas = document.getElementById(id);
+        if (!canvas || !analyticsData?.[branch]?.curve) return;
+        drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor);
+        // Update peak badge
+        const curve = analyticsData[branch].curve;
+        const peak = curve.reduce((a, b) => b[1] > a[1] ? b : a);
+        const badge = document.getElementById(`peak-${id}`);
+        if (badge) badge.textContent = `📍 ذروة التوزيع عند ${peak[0].toFixed(1)}%`;
+    });
+}
 
-    function buildCompareGrid() {
-        const branches = ['علمي علوم', 'علمي رياضة', 'أدبي'];
-        const grid = document.getElementById('compareGrid');
-        grid.innerHTML = branches.map(branch => {
-            const d = analyticsData[branch];
-            const cfg = BRANCH_CONFIG[branch];
-            const total = d.total;
-            const maxBand = Math.max(...BAND_CONFIG.map(b => d.bands[b.key] || 0));
-
-            const bars = BAND_CONFIG.map(bc => {
-                const count = d.bands[bc.key] || 0;
-                const pct = maxBand > 0 ? ((count / maxBand) * 100).toFixed(1) : 0;
-                const ofTotal = ((count / total) * 100).toFixed(1);
-                return `
-                <div class="hbar-row">
-                    <span class="hbar-label" style="color:${bc.color};font-size:0.78rem;">${bc.label}</span>
-                    <div class="hbar-track">
-                        <div class="hbar-fill" style="width:0%;background:${bc.gradient}" data-width="${pct}">
-                            ${ofTotal}%
-                        </div>
-                    </div>
-                    <span class="hbar-num">${fmtNum(count)}</span>
-                </div>`;
-            }).join('');
-
-            return `
-            <div class="compare-card" style="border-color:${cfg.color}30">
-                <div class="branch-label">
-                    <span class="dot" style="background:${cfg.color};box-shadow:0 0 8px ${cfg.color}"></span>
-                    ${cfg.icon} ${branch}
-                    <span style="margin-right:auto;font-size:0.8rem;color:var(--text2);font-weight:400">${fmtNum(total)} طالب</span>
-                </div>
-                <div class="hbar-list">${bars}</div>
-            </div>`;
-        }).join('');
-    }
-
-    function animateBars() {
-        document.querySelectorAll('.band-bar[data-width]').forEach(el => {
-            setTimeout(() => { el.style.width = el.dataset.width + '%'; }, 100);
-        });
-        document.querySelectorAll('.hbar-fill[data-width]').forEach(el => {
-            setTimeout(() => { el.style.width = el.dataset.width + '%'; }, 200);
-        });
-    }
-
-    function drawAllCurves() {
-        const branches = ['علمي علوم', 'علمي رياضة', 'أدبي'];
-        branches.forEach(branch => {
-            const canvasId = `curve-${branch.replace(/ /g, '-')}`;
-            const canvas = document.getElementById(canvasId);
-            if (canvas && analyticsData[branch]?.curve) {
-                drawBranchCurve(canvas, analyticsData[branch].curve, BRANCH_CONFIG[branch].color);
-            }
-        });
-    }
-
-    function switchBranch(branch, btn) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.branch-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        const panel = document.getElementById(`panel-${branch}`);
-        panel.classList.add('active');
-        animateBars();
-        setTimeout(() => {
-            const canvasId = `curve-${branch.replace(/ /g, '-')}`;
-            const canvas = document.getElementById(canvasId);
-            if (canvas && analyticsData?.[branch]?.curve) {
-                drawBranchCurve(canvas, analyticsData[branch].curve, BRANCH_CONFIG[branch].color);
-            }
-        }, 50);
-    }
-
-    async function init() {
-        try {
-            const res = await fetch('static/data/analytics.json');
-            analyticsData = await res.json();
-
-            const branches = Object.keys(analyticsData);
-            let totTotal = 0, totPassed = 0, totSecond = 0, totFailed = 0;
-            branches.forEach(b => {
-                totTotal += analyticsData[b].total;
-                totPassed += analyticsData[b].passed;
-                totSecond += analyticsData[b].second_round;
-                totFailed += analyticsData[b].failed;
-            });
-
-            animateCount(document.getElementById('totalStudents'), totTotal);
-            animateCount(document.getElementById('totalPassed'), totPassed);
-            animateCount(document.getElementById('totalSecond'), totSecond);
-            animateCount(document.getElementById('totalFailed'), totFailed);
-            const fe = document.getElementById('footerTotal');
-            if (fe) fe.textContent = fmtNum(totTotal);
-
-            // Build panels
-            ['علمي علوم', 'علمي رياضة', 'أدبي'].forEach(branch => {
-                if (analyticsData[branch]) buildBranchPanel(branch, analyticsData[branch]);
-            });
-
-            buildCompareGrid();
-
-            // Hide loader
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.remove(), 500);
-
-            // Animate
-            setTimeout(() => {
-                animateBars();
-                setTimeout(drawAllCurves, 300);
-            }, 200);
-
-            // Resize handler
-            let resizeTimer;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(drawAllCurves, 150);
-            });
-
-        } catch (err) {
-            console.error('Failed to load analytics:', err);
-            document.getElementById('loadingOverlay').innerHTML = `
-                <div style="text-align:center;padding:2rem">
-                    <div style="font-size:3rem;margin-bottom:1rem">⚠️</div>
-                    <p style="color:#f87171">تعذّر تحميل البيانات</p>
-                </div>`;
+// ── Switch branch ─────────────────────────────────────
+function switchBranch(branch, btn) {
+    document.querySelectorAll('.branch-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.branch-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`panel-${branch}`).classList.add('active');
+    animBars();
+    setTimeout(() => {
+        const id = `cv-${branch.replace(/ /g, '_')}`;
+        const canvas = document.getElementById(id);
+        if (canvas && analyticsData?.[branch]?.curve) {
+            drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor);
+            const peak = analyticsData[branch].curve.reduce((a, b) => b[1] > a[1] ? b : a);
+            const badge = document.getElementById(`peak-${id}`);
+            if (badge) badge.textContent = `📍 ذروة التوزيع عند ${peak[0].toFixed(1)}%`;
         }
-    }
+    }, 60);
+}
 
-    init();
-    </script>
+// ── Main Init ─────────────────────────────────────────
+async function init() {
+    try {
+        const res = await fetch('static/data/analytics.json');
+        analyticsData = await res.json();
+
+        // Totals
+        let totals = { total: 0, passed: 0, second_round: 0, failed: 0 };
+        Object.values(analyticsData).forEach(d => {
+            totals.total        += d.total;
+            totals.passed       += d.passed;
+            totals.second_round += d.second_round;
+            totals.failed       += d.failed;
+        });
+        animateCount(document.getElementById('totalStudents'), totals.total);
+        animateCount(document.getElementById('totalPassed'),   totals.passed);
+        animateCount(document.getElementById('totalSecond'),   totals.second_round);
+        animateCount(document.getElementById('totalFailed'),   totals.failed);
+        const fe = document.getElementById('footerTotal');
+        if (fe) fe.textContent = fmtAr(totals.total);
+
+        // Build panels & compare
+        ['علمي علوم', 'علمي رياضة', 'أدبي'].forEach(b => {
+            if (analyticsData[b]) buildPanel(b, analyticsData[b]);
+        });
+        buildCompare();
+
+        // Hide loader
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.opacity = '0';
+        setTimeout(() => overlay.remove(), 500);
+
+        // Animate everything
+        setTimeout(() => { animBars(); setTimeout(drawAll, 250); }, 150);
+
+        // Re-draw on resize / theme change
+        let rt;
+        window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(drawAll, 150); });
+        document.getElementById('themeToggle').addEventListener('click', () => setTimeout(drawAll, 50));
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById('loadingOverlay').innerHTML = `
+            <div style="text-align:center;padding:2rem">
+                <div style="font-size:3rem;margin-bottom:1rem">⚠️</div>
+                <p style="color:#e07070;font-family:'Cairo',sans-serif">تعذّر تحميل البيانات</p>
+            </div>`;
+    }
+}
+
+init();
+</script>
 </body>
 </html>
