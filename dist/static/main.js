@@ -529,7 +529,7 @@ async function renderBranchRankAndBellCurve(student) {
     drawBellCurve(pct, `المركز #${estimatedRank.toLocaleString('ar-EG')}`);
 }
 
-// Draw High-DPI Bell Curve Canvas Chart with Axes, Grid & Data Labels
+// Draw High-DPI Bell Curve Canvas Chart with Axes, Grid & Data Labels (Mobile Portrait Optimized)
 function drawBellCurve(studentPercent, rankText = '') {
     const canvas = document.getElementById('bellCurveCanvas');
     if (!canvas || !canvas.getContext) return;
@@ -556,10 +556,11 @@ function drawBellCurve(studentPercent, rankText = '') {
     const gridLineColor = isLight ? 'rgba(108, 88, 76, 0.15)' : 'rgba(212, 163, 115, 0.18)';
     const axisColor = isLight ? '#9c6638' : '#d4a373';
 
-    const paddingLeft = 45;
-    const paddingRight = 45;
-    const paddingTop = 30;
-    const paddingBottom = 40;
+    const isMobile = w < 500;
+    const paddingLeft = isMobile ? 20 : 45;
+    const paddingRight = isMobile ? 20 : 45;
+    const paddingTop = isMobile ? 24 : 30;
+    const paddingBottom = isMobile ? 28 : 40;
 
     const chartW = w - paddingLeft - paddingRight;
     const chartH = h - paddingTop - paddingBottom;
@@ -586,7 +587,7 @@ function drawBellCurve(studentPercent, rankText = '') {
         ctx.stroke();
     }
 
-    const ticks = [0, 25, 50, 62.5, 75, 90, 100];
+    const ticks = isMobile ? [0, 25, 50, 75, 100] : [0, 25, 50, 62.5, 75, 90, 100];
     ticks.forEach(t => {
         const gx = paddingLeft + (t / 100) * chartW;
         ctx.beginPath();
@@ -619,7 +620,7 @@ function drawBellCurve(studentPercent, rankText = '') {
 
     // 3. Draw Main Bell Curve Stroke
     ctx.strokeStyle = '#d4a373';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = isMobile ? 2.5 : 3;
     ctx.beginPath();
 
     for (let px = 0; px <= chartW; px += 2) {
@@ -649,7 +650,7 @@ function drawBellCurve(studentPercent, rankText = '') {
 
     // 5. Draw Axis Labels & Tick Marks
     ctx.fillStyle = textMutedColor;
-    ctx.font = '11px Cairo, system-ui, sans-serif';
+    ctx.font = isMobile ? '10px Cairo, system-ui, sans-serif' : '11px Cairo, system-ui, sans-serif';
     ctx.textAlign = 'center';
 
     ticks.forEach(t => {
@@ -660,25 +661,27 @@ function drawBellCurve(studentPercent, rankText = '') {
         ctx.stroke();
 
         let label = `${t}%`;
-        if (t === 62.5) label = '62.5% (المتوسط)';
-        ctx.fillText(label, tx, baseline + 18);
+        if (t === 62.5 && !isMobile) label = '62.5% (المتوسط)';
+        ctx.fillText(label, tx, baseline + (isMobile ? 14 : 18));
     });
 
     // Y-Axis Title Label
-    ctx.save();
-    ctx.translate(w - 12, paddingTop + chartH / 2);
-    ctx.rotate(Math.PI / 2);
-    ctx.font = 'bold 11px Cairo, system-ui, sans-serif';
-    ctx.fillStyle = axisColor;
-    ctx.textAlign = 'center';
-    ctx.fillText('كثافة الطلاب (عدد الناجحين)', 0, 0);
-    ctx.restore();
+    if (!isMobile) {
+        ctx.save();
+        ctx.translate(w - 12, paddingTop + chartH / 2);
+        ctx.rotate(Math.PI / 2);
+        ctx.font = 'bold 11px Cairo, system-ui, sans-serif';
+        ctx.fillStyle = axisColor;
+        ctx.textAlign = 'center';
+        ctx.fillText('كثافة الطلاب (عدد الناجحين)', 0, 0);
+        ctx.restore();
 
-    // X-Axis Title Label
-    ctx.font = 'bold 11px Cairo, system-ui, sans-serif';
-    ctx.fillStyle = axisColor;
-    ctx.textAlign = 'center';
-    ctx.fillText('← النسبة المئوية (%) →', paddingLeft + chartW / 2, baseline + 32);
+        // X-Axis Title Label
+        ctx.font = 'bold 11px Cairo, system-ui, sans-serif';
+        ctx.fillStyle = axisColor;
+        ctx.textAlign = 'center';
+        ctx.fillText('← النسبة المئوية (%) →', paddingLeft + chartW / 2, baseline + 32);
+    }
 
     // 6. Draw Student Position Indicator & Highlight Badge
     const clampedPct = Math.min(100, Math.max(0, studentPercent));
@@ -699,13 +702,13 @@ function drawBellCurve(studentPercent, rankText = '') {
 
     // Glowing Outer Dot
     ctx.beginPath();
-    ctx.arc(dotX, studentPy, 9, 0, Math.PI * 2);
+    ctx.arc(dotX, studentPy, isMobile ? 7 : 9, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(88, 129, 87, 0.35)';
     ctx.fill();
 
     // Inner Glowing Dot
     ctx.beginPath();
-    ctx.arc(dotX, studentPy, 5, 0, Math.PI * 2);
+    ctx.arc(dotX, studentPy, isMobile ? 4 : 5, 0, Math.PI * 2);
     ctx.fillStyle = '#588157';
     ctx.fill();
     ctx.strokeStyle = '#ffffff';
@@ -713,16 +716,16 @@ function drawBellCurve(studentPercent, rankText = '') {
     ctx.stroke();
 
     // Floating Tooltip Badge Above Dot
-    const badgeText = `أنت هنا: ${clampedPct}% ${rankText ? '(' + rankText + ')' : ''}`;
-    ctx.font = 'bold 12px Cairo, system-ui, sans-serif';
+    const badgeText = isMobile ? `${clampedPct}% ${rankText ? '(' + rankText + ')' : ''}` : `أنت هنا: ${clampedPct}% ${rankText ? '(' + rankText + ')' : ''}`;
+    ctx.font = isMobile ? 'bold 11px Cairo, system-ui, sans-serif' : 'bold 12px Cairo, system-ui, sans-serif';
     const textWidth = ctx.measureText(badgeText).width;
-    const badgeW = textWidth + 16;
-    const badgeH = 24;
+    const badgeW = textWidth + (isMobile ? 12 : 16);
+    const badgeH = isMobile ? 22 : 24;
     let badgeX = dotX - badgeW / 2;
 
-    if (badgeX < 5) badgeX = 5;
-    if (badgeX + badgeW > w - 5) badgeX = w - badgeW - 5;
-    const badgeY = Math.max(8, studentPy - 34);
+    if (badgeX < 4) badgeX = 4;
+    if (badgeX + badgeW > w - 4) badgeX = w - badgeW - 4;
+    const badgeY = Math.max(4, studentPy - (isMobile ? 28 : 34));
 
     ctx.fillStyle = isLight ? '#271d15' : '#d4a373';
     ctx.beginPath();
