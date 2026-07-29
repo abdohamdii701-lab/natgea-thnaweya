@@ -1,6 +1,9 @@
 import sqlite3
 import time
 import os
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 MAIN_DB = "Stage_New_Search.db"
 COLAB_RESULTS_DB = "scraped_results.db"

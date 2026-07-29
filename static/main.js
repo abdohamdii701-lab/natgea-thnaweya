@@ -162,7 +162,7 @@ async function performSearch(query, mode) {
         const tokens = normQuery.split(' ').filter(t => t);
         if (tokens.length > 0) {
             const firstWord = tokens[0];
-            const prefix = firstWord.length >= 2 ? firstWord.substring(0, 2) : (firstWord.substring(0, 1) || "ot");
+            const prefix = (firstWord.startsWith('مح') && firstWord.length >= 3) ? firstWord.substring(0, 3) : (firstWord.length >= 2 ? firstWord.substring(0, 2) : (firstWord.substring(0, 1) || "ot"));
             
             try {
                 let res = await fetch(`static/data/names/${encodeURIComponent(prefix)}.json`);
