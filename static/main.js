@@ -99,7 +99,7 @@ function normalizeArabicJS(text) {
     return str.replace(/\s+/g, ' ').trim();
 }
 
-// Search Execution with Dual Static CDN & API Fallback
+// Smart Hybrid Search Execution with Auto-Detecting CDN & API Fallback
 async function performSearch(query, mode) {
     const submitBtn = document.getElementById('submitBtn');
     const btnText = submitBtn.querySelector('.btn-text');
@@ -112,52 +112,60 @@ async function performSearch(query, mode) {
     hideResults();
     resultsSection.style.display = 'block';
 
+    // Smart Auto-Detect Query Type (Seating vs Name)
     const isNumeric = /^\d+$/.test(query);
+    const searchMode = isNumeric ? 'seating' : 'name';
 
-    // 1. Static CDN Seating Search (5,000 Range Chunks)
-    if (isNumeric || mode === 'seating') {
+    // 1. Static CDN Seating Search
+    if (searchMode === 'seating') {
         const seatingNo = query;
-        if (/^\d+$/.test(seatingNo)) {
-            const chunkKey = Math.floor(parseInt(seatingNo) / 5000) * 5000;
-            try {
-                const res = await fetch(`static/data/seating/${chunkKey}.json`);
-                if (res.ok) {
-                    const chunkData = await res.json();
-                    if (chunkData[seatingNo]) {
-                        const st = chunkData[seatingNo];
-                        renderSingleStudent({
-                            seating_no: seatingNo,
-                            arabic_name: st.n,
-                            total_degree: st.d,
-                            student_case_desc: st.c,
-                            percentage: st.p
-                        });
-                        finishSearch(submitBtn, btnText, spinner);
-                        return;
-                    }
+        const chunkKey = Math.floor(parseInt(seatingNo) / 5000) * 5000;
+        try {
+            const res = await fetch(`static/data/seating/${chunkKey}.json`);
+            if (res.ok) {
+                const chunkData = await res.json();
+                if (chunkData[seatingNo]) {
+                    const st = chunkData[seatingNo];
+                    renderSingleStudent({
+                        seating_no: seatingNo,
+                        arabic_name: st.n,
+                        total_degree: st.d,
+                        student_case_desc: st.c,
+                        percentage: st.p
+                    });
+                    finishSearch(submitBtn, btnText, spinner);
+                    return;
                 }
-            } catch (e) {
-                console.log('Static CDN seating fetch fallback to API');
             }
+        } catch (e) {
+            console.log('Static CDN seating fetch fallback to API');
         }
     }
 
-    // 2. Static CDN Tokenized Name Search (2-Letter Prefix, Sorted Highest Score First)
-    if (!isNumeric || mode === 'name') {
+    // 2. Static CDN Tokenized Name Search (URL Encoded Prefix, Sorted Highest Score First)
+    if (searchMode === 'name') {
         const normQuery = normalizeArabicJS(query);
         const tokens = normQuery.split(' ').filter(t => t);
         if (tokens.length > 0) {
             const firstWord = tokens[0];
             const prefix = firstWord.length >= 2 ? firstWord.substring(0, 2) : (firstWord.substring(0, 1) || "ot");
+            
             try {
-                const res = await fetch(`static/data/names/${prefix}.json`);
+                // Try URL encoded prefix first, then raw prefix
+                let res = await fetch(`static/data/names/${encodeURIComponent(prefix)}.json`);
+                if (!res.ok) {
+                    res = await fetch(`static/data/names/${prefix}.json`);
+                }
+
                 if (res.ok) {
                     const nameList = await res.json();
                     const matches = nameList.filter(st => {
                         const normStName = st.nn || normalizeArabicJS(st.n);
+                        const rawStName = st.n;
                         return tokens.every(token => {
+                            const normToken = normalizeArabicJS(token);
                             const altToken = token.endsWith('ه') ? token.slice(0, -1) + 'ة' : (token.endsWith('ة') ? token.slice(0, -1) + 'ه' : token);
-                            return normStName.includes(token) || st.n.includes(token) || st.n.includes(altToken);
+                            return normStName.includes(normToken) || rawStName.includes(token) || rawStName.includes(altToken);
                         });
                     }).sort((a, b) => b.d - a.d).slice(0, 30);
 
@@ -186,7 +194,7 @@ async function performSearch(query, mode) {
 
     // 3. Dynamic API Server Fallback
     try {
-        const response = await fetch(`/api/search?mode=${mode}&q=${encodeURIComponent(query)}`);
+        const response = await fetch(`/api/search?mode=${searchMode}&q=${encodeURIComponent(query)}`);
         const result = await response.json();
 
         if (result.type === 'single' && result.data) {
