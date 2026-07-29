@@ -26,8 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const resGrade = document.getElementById('resGrade');
     const statusBadge = document.getElementById('statusBadge');
     
-    // Load Stats and Top Students on launch
-    fetchStats();
+    // Load Top Students on launch
     fetchTopStudents('all');
 
     // Top Performers Track Tabs Switcher
