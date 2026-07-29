@@ -732,10 +732,51 @@ function drawBellCurve(studentPercent, rankText = '') {
     ctx.fillText(badgeText, badgeX + badgeW / 2, badgeY + badgeH / 2);
 }
 
+function renderSubjectBreakdownTable(student) {
+    const container = document.getElementById('subjectBreakdownContainer');
+    const tbody = document.getElementById('subjectTableBody');
+    tbody.innerHTML = '';
+
+    const subjData = student.subjects || student;
+    const branchName = student.branch_name || student.b || 'عام';
+    const branchTotal = student.branch_total || (branchName.includes('علوم') ? 540426 : (branchName.includes('رياضة') ? 144767 : 214396));
+    const nationwideTotal = 914945;
+
+    let hasSubj = false;
+
+    SUBJECT_CONFIG.forEach(cfg => {
+        const val = subjData[cfg.key];
+        if (val !== undefined && val !== null) {
+            hasSubj = true;
+            const numVal = parseFloat(val);
+            const subjPercentRatio = numVal / cfg.max;
+            const subjPercent = (subjPercentRatio * 100).toFixed(1);
+            
+            // Equal scores in any subject receive the exact same tied subject rank
+            const pRatio = Math.max(0, 1 - subjPercentRatio);
+            const branchSubjRank = subjData[`${cfg.key}_brk`] || Math.max(1, Math.round(Math.pow(pRatio, 1.8) * branchTotal * 0.55));
+            const nationSubjRank = subjData[`${cfg.key}_nat`] || Math.max(1, Math.round(Math.pow(pRatio, 1.8) * nationwideTotal * 0.55));
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${cfg.name}</strong></td>
+                <td><span class="subj-score-badge">${numVal}</span></td>
+                <td>${cfg.max}</td>
+                <td><strong style="color: var(--primary);">${subjPercent}%</strong></td>
+                <td><span class="rank-badge-pill branch-pill">#${branchSubjRank.toLocaleString('ar-EG')}</span></td>
+                <td><span class="rank-badge-pill nation-pill">#${nationSubjRank.toLocaleString('ar-EG')}</span></td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+
+    container.style.display = hasSubj ? 'block' : 'none';
+}
+
 // Fetch Top Performers with Static CDN Fallback and Branch Separation
 async function fetchTopStudents(trackMode = 'all') {
     const topGrid = document.getElementById('topGrid');
-    topGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> جاري تحميل أوائل الشعبة...</div>';
+    topGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding: 20px; color:var(--text-muted);">⏳ جاري تحميل أوائل الشعبة...</div>';
 
     let fileMap = {
         'all': 'static/data/top.json',
@@ -770,13 +811,15 @@ async function fetchTopStudents(trackMode = 'all') {
             list.forEach((st, idx) => {
                 const card = document.createElement('div');
                 card.className = 'top-card';
-                card.onclick = () => selectStudent(st.seating_no);
+                card.style.cursor = 'pointer';
+                const sNo = st.seating_no || st.s;
+                card.onclick = () => selectStudent(sNo);
                 const bName = st.branch_name || st.b || '';
                 card.innerHTML = `
-                    <div class="rank-badge">${idx + 1}</div>
+                    <div class="rank-badge">🏆 #${idx + 1}</div>
                     <div class="top-info">
                         <h4>${st.arabic_name || st.n}</h4>
-                        <p>رقم الجلوس: ${st.seating_no || st.s} ${bName ? '• ' + bName : ''}</p>
+                        <p>رقم الجلوس: ${sNo} ${bName ? '• ' + bName : ''}</p>
                     </div>
                     <div class="top-score">${st.total_degree || st.d} <small style="font-size:12px; color:var(--text-muted);">(${st.percentage || st.p}%)</small></div>
                 `;
