@@ -912,15 +912,14 @@ async function renderTansiqPredictor(student) {
                     let barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
 
                     if (stPct >= sec.max_pct) {
-                        const bonus = Math.min(4, (stPct - sec.max_pct) * 1.2);
-                        prob = Math.round(92 + bonus);
-                        probLabel = '🟢 فرصة مؤكدة جداً';
+                        prob = 100;
+                        probLabel = '🟢 فرصة مؤكدة 100%';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
                     } else if (stPct >= sec.avg_pct) {
                         const ratio = (stPct - sec.avg_pct) / (sec.max_pct - sec.avg_pct || 1);
-                        prob = Math.round(75 + ratio * 16);
-                        probLabel = '🟢 فرصة قوية';
+                        prob = Math.round(80 + ratio * 19);
+                        probLabel = '🟢 فرصة قوية جداً';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
                     } else if (stPct >= sec.min_pct) {
