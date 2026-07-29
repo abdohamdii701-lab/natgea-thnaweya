@@ -289,6 +289,9 @@ function renderSingleStudent(student) {
     // Render Branch Rank & Bell Curve Visualization
     renderBranchRankAndBellCurve(student);
 
+    // Render Tansiq Predictor & Probability Engine
+    renderTansiqPredictor(student);
+
     if (percent >= 75 && typeof confetti === 'function') {
         confetti({
             particleCount: 100,
@@ -561,6 +564,99 @@ async function fetchTopStudents(trackMode = 'all') {
     }
 }
 
+
+// Tansiq Predictor & Probability Engine Renderer
+let cachedTansiqData = null;
+
+async function renderTansiqPredictor(student) {
+    const container = document.getElementById('tansiqPredictorContainer');
+    const grid = document.getElementById('tansiqGrid');
+    grid.innerHTML = '';
+
+    const stPct = parseFloat(student.percentage) || 0;
+    const branchName = student.branch_name || student.b || '';
+
+    // Determine target track for Tansiq
+    let targetTrack = 'science_bio';
+    if (branchName.includes('رياض')) {
+        targetTrack = 'science_math';
+    } else if (branchName.includes('أدب') || branchName.includes('ادب')) {
+        targetTrack = 'literary';
+    }
+
+    try {
+        if (!cachedTansiqData) {
+            const res = await fetch('static/data/tansiq.json');
+            if (res.ok) {
+                cachedTansiqData = await res.json();
+            }
+        }
+
+        if (cachedTansiqData && cachedTansiqData.sectors) {
+            const trackSectors = cachedTansiqData.sectors.filter(s => s.track === targetTrack);
+
+            if (trackSectors.length > 0) {
+                container.style.display = 'block';
+
+                trackSectors.forEach(sec => {
+                    // Probability calculation algorithm
+                    let prob = 50;
+                    let probLabel = '🟡 فرصة محتملة';
+                    let badgeClass = 'prob-med';
+                    let barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
+
+                    if (stPct >= sec.max_pct) {
+                        prob = Math.min(99, 95 + (stPct - sec.max_pct) * 2);
+                        probLabel = '🟢 فرصة مؤكدة جداً';
+                        badgeClass = 'prob-high';
+                        barColor = 'linear-gradient(90deg, #10b981, #34d399)';
+                    } else if (stPct >= sec.avg_pct) {
+                        const ratio = (stPct - sec.avg_pct) / (sec.max_pct - sec.avg_pct || 1);
+                        prob = 80 + ratio * 15;
+                        probLabel = '🟢 فرصة قوية جداً';
+                        badgeClass = 'prob-high';
+                        barColor = 'linear-gradient(90deg, #10b981, #34d399)';
+                    } else if (stPct >= sec.min_pct - 1.5) {
+                        const ratio = (stPct - (sec.min_pct - 1.5)) / (sec.avg_pct - (sec.min_pct - 1.5) || 1);
+                        prob = 50 + ratio * 30;
+                        probLabel = '🟡 فرصة محتملة';
+                        badgeClass = 'prob-med';
+                        barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
+                    } else {
+                        const ratio = Math.max(0, stPct / (sec.min_pct - 1.5 || 1));
+                        prob = Math.max(10, Math.round(ratio * 45));
+                        probLabel = '🔴 فرصة ضئيلة';
+                        badgeClass = 'prob-low';
+                        barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
+                    }
+
+                    prob = Math.round(prob);
+
+                    const card = document.createElement('div');
+                    card.className = 'tansiq-card';
+                    card.innerHTML = `
+                        <div class="tcard-top">
+                            <span class="tcard-name">${sec.name}</span>
+                            <span class="prob-badge ${badgeClass}">${probLabel} (${prob}%)</span>
+                        </div>
+                        <div class="tcard-meta">
+                            <span>متوسط التنسيق (آخر 3 سنوات): <strong>${sec.avg_pct}%</strong> | الحد الأدنى: <strong>${sec.min_pct}%</strong></span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div class="prob-bar-fill" style="width: ${prob}%; background: ${barColor};"></div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            } else {
+                container.style.display = 'none';
+            }
+        }
+    } catch (e) {
+        console.error('Failed to render Tansiq predictor', e);
+        container.style.display = 'none';
+    }
+}
 
 // Share Result
 function shareResult() {
