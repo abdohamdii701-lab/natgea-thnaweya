@@ -1,9 +1,19 @@
-# Ignore large database files
+# Databases & Heavy Data Archives (Do NOT upload to Cloudflare / GitHub)
+*.db
+*.sqlite
+*.sqlite3
 *.accdb
-Stage_New_Search.db
-Stage_New_Search_db.zip
+*.csv
 *.zip
-Stage_New_Search_Extracted.csv
+*.rar
+*.7z
+*.tar
+*.gz
+
+# Scratch scripts & temporary data
+scratch/
+.idea/
+.vscode/
 
 # Python
 __pycache__/
@@ -11,3 +21,7 @@ __pycache__/
 .env
 venv/
 .venv/
+
+# OS metadata
+.DS_Store
+Thumbs.db
