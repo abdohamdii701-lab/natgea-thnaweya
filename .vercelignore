@@ -1,3 +1,8 @@
+# Exclude large static data directories from Vercel Python function bundle
+dist/
+static/
+
+# Exclude raw database files
 Stage_New_Search_db.zip
 Stage_New_Search.db
 Stage_New_Search_Extracted.csv
