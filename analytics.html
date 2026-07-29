@@ -585,13 +585,13 @@ document.getElementById('themeToggle').addEventListener('click', () => {
     else applyTheme(false); // default light like main site
 })();
 
-// -- Histogram Chart
+// -- Histogram Chart (50-100% range, passed students only)
 function drawHistogram(canvas, curveData, rawColor, branchData) {
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     const W = rect.width || canvas.offsetWidth || 600;
     const isMobile = W < 520;
-    const H = isMobile ? 240 : (W < 720 ? 300 : 350);
+    const H = isMobile ? 240 : (W < 720 ? 300 : 355);
 
     canvas.width  = W * dpr;
     canvas.height = H * dpr;
@@ -606,49 +606,57 @@ function drawHistogram(canvas, curveData, rawColor, branchData) {
     const isLight = document.body.classList.contains('light-theme');
 
     const pL = isMobile ? 50 : 68;
-    const pR = isMobile ? 10 : 16;
-    const pT = isMobile ? 34 : 46;
-    const pB = isMobile ? 46 : 56;
+    const pR = isMobile ? 10 : 18;
+    const pT = isMobile ? 36 : 50;
+    const pB = isMobile ? 48 : 58;
     const plotW = W - pL - pR;
     const plotH = H - pT - pB;
 
-    // 1. Build 5% bins
+    // 1. Build 5%-wide bins from 50 to 100
     const BIN = 5;
+    const X_MIN = 50, X_MAX = 100;
     const bins = {};
-    for (let s = 0; s <= 95; s += BIN) bins[s] = 0;
+    for (let s = X_MIN; s < X_MAX; s += BIN) bins[s] = 0;
     curveData.forEach(([pct, cnt]) => {
-        const key = Math.floor(pct / BIN) * BIN;
-        if (key >= 0 && key <= 95) bins[key] = (bins[key] || 0) + cnt;
+        if (pct < X_MIN) return;
+        const key = Math.min(Math.floor(pct / BIN) * BIN, X_MAX - BIN);
+        if (bins[key] !== undefined) bins[key] += cnt;
     });
-    const binKeys   = Object.keys(bins).map(Number).sort((a,b) => a-b);
+    const binKeys   = Object.keys(bins).map(Number).sort((a,b)=>a-b);
     const binCounts = binKeys.map(k => bins[k]);
-    const maxCount  = Math.max(...binCounts);
+    const maxCount  = Math.max(...binCounts, 1);
+    const numBins   = binKeys.length;
 
-    // 2. Weighted mean
+    // 2. Mean of passed students only
     let wSum = 0, wN = 0;
-    curveData.forEach(([pct, cnt]) => { wSum += pct * cnt; wN += cnt; });
-    const meanPct = wN > 0 ? wSum / wN : 50;
+    curveData.forEach(([pct, cnt]) => {
+        if (pct >= X_MIN) { wSum += pct * cnt; wN += cnt; }
+    });
+    const meanPct = wN > 0 ? wSum / wN : 75;
+
+    // 3. Peak bin (mode)
+    const peakIdx   = binCounts.indexOf(maxCount);
+    const peakStart = binKeys[peakIdx];
+    const peakEnd   = peakStart + BIN;
 
     // Coordinate helpers
-    const xOf = (pct) => pL + (pct / 100) * plotW;
+    const xOf = (pct) => pL + ((pct - X_MIN) / (X_MAX - X_MIN)) * plotW;
     const yOf = (cnt) => pT + plotH - (cnt / maxCount) * plotH;
 
-    // 3. Nice Y ticks
+    // 4. Nice Y ticks
     const rawStep = maxCount / 5;
     const mag = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
     const niceStep = Math.ceil(rawStep / mag) * mag || 1000;
     const yTicks = [];
     for (let v = 0; v <= maxCount * 1.08; v += niceStep) yTicks.push(v);
 
-    const textColor = isLight ? 'rgba(55,35,15,0.78)' : 'rgba(225,205,178,0.78)';
+    const textColor = isLight ? 'rgba(55,35,12,0.78)' : 'rgba(225,205,175,0.78)';
     const gridColor = isLight ? 'rgba(0,0,0,0.07)'    : 'rgba(255,255,255,0.07)';
     const axisColor = isLight ? 'rgba(0,0,0,0.22)'    : 'rgba(255,255,255,0.22)';
     const avgColor  = '#d4a373';
-    const passColor = '#588157';
-    const labelFont = ${isMobile ? 9 : 10}px Cairo, sans-serif;
-    const boldFont  = old px Cairo, sans-serif;
+    const peakColor = '#a78bfa';
 
-    // 4. Horizontal grid + Y labels
+    // 5. Grid + Y labels
     ctx.strokeStyle = gridColor;
     ctx.lineWidth = 1;
     yTicks.forEach(v => {
@@ -656,7 +664,7 @@ function drawHistogram(canvas, curveData, rawColor, branchData) {
         const y = yOf(v);
         ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(pL + plotW, y); ctx.stroke();
         ctx.fillStyle = textColor;
-        ctx.font = labelFont;
+        ctx.font = (isMobile ? 9 : 10) + 'px Cairo, sans-serif';
         ctx.textAlign = 'right';
         const lbl = v >= 10000 ? Math.round(v/1000) + 'k'
                   : v >= 1000  ? (v/1000).toFixed(1) + 'k'
@@ -664,10 +672,9 @@ function drawHistogram(canvas, curveData, rawColor, branchData) {
         ctx.fillText(lbl, pL - 5, y + 3.5);
     });
 
-    // Y-axis title
     if (!isMobile) {
         ctx.save();
-        ctx.translate(12, pT + plotH / 2);
+        ctx.translate(13, pT + plotH / 2);
         ctx.rotate(-Math.PI / 2);
         ctx.font = '10px Cairo, sans-serif';
         ctx.fillStyle = textColor;
@@ -676,70 +683,72 @@ function drawHistogram(canvas, curveData, rawColor, branchData) {
         ctx.restore();
     }
 
-    // 5. Draw bars
-    const unitW = plotW / 20;
-    const barW  = unitW * 0.78;
+    // 6. Draw bars
+    const unitW = plotW / numBins;
+    const barW  = unitW * 0.76;
     const barGap = (unitW - barW) / 2;
 
     binKeys.forEach((startPct, i) => {
         const count = binCounts[i];
         if (count === 0) return;
-        const barX = pL + (startPct / 100) * plotW + barGap;
-        const barH = (count / maxCount) * plotH;
-        const barY = pT + plotH - barH;
+        const barX = xOf(startPct) + barGap;
+        const bH   = (count / maxCount) * plotH;
+        const barY = pT + plotH - bH;
+        const isPeak = (i === peakIdx);
 
-        const alpha = startPct >= 50 ? 'CC' : '77';
         const grd = ctx.createLinearGradient(0, barY, 0, pT + plotH);
-        grd.addColorStop(0, rawColor + alpha);
-        grd.addColorStop(1, rawColor + '22');
+        grd.addColorStop(0, (isPeak ? peakColor : rawColor) + (isPeak ? 'EE' : 'AA'));
+        grd.addColorStop(1, (isPeak ? peakColor : rawColor) + '22');
 
         ctx.fillStyle = grd;
-        const r = Math.min(4, barW * 0.35);
+        const r = Math.min(5, barW * 0.3);
         ctx.beginPath();
-        ctx.roundRect(barX, barY, barW, barH, [r, r, 0, 0]);
+        ctx.roundRect(barX, barY, barW, bH, [r, r, 0, 0]);
         ctx.fill();
 
-        ctx.strokeStyle = rawColor + '44';
-        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = (isPeak ? peakColor : rawColor) + '55';
+        ctx.lineWidth = isPeak ? 1.5 : 0.5;
         ctx.stroke();
 
-        // Count on bar
-        if (barH > (isMobile ? 20 : 24) && count > 0) {
-            ctx.fillStyle = isLight ? 'rgba(35,18,5,0.72)' : 'rgba(255,245,225,0.82)';
-            ctx.font = ${isMobile ? 7 : 8}px Cairo, sans-serif;
+        if (count > 0 && bH > (isMobile ? 18 : 22)) {
+            ctx.fillStyle = isLight ? 'rgba(30,15,5,0.75)' : 'rgba(255,245,225,0.85)';
+            ctx.font = (isMobile ? 7.5 : 9) + 'px Cairo, sans-serif';
             ctx.textAlign = 'center';
             const lbl = count >= 10000 ? Math.round(count/1000) + 'k'
                       : count >= 1000  ? (count/1000).toFixed(1) + 'k'
                       : String(count);
-            ctx.fillText(lbl, barX + barW / 2, barY - 2);
+            ctx.fillText(lbl, barX + barW / 2, barY - 3);
         }
     });
 
-    // 6. Axes
+    // 7. Axes
     ctx.strokeStyle = axisColor;
     ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(pL, pT); ctx.lineTo(pL, pT + plotH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pL, pT); ctx.lineTo(pL, pT + plotH + 1); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(pL, pT + plotH); ctx.lineTo(pL + plotW, pT + plotH); ctx.stroke();
 
-    // 7. X-axis labels (every 10%)
-    [0,10,20,30,40,50,60,70,80,90,100].forEach(pct => {
+    // 8. X ticks & labels
+    const xTickVals = isMobile
+        ? [50, 60, 70, 80, 90, 100]
+        : [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100];
+
+    ctx.strokeStyle = axisColor;
+    ctx.lineWidth = 1;
+    xTickVals.forEach(pct => {
         const x = xOf(pct);
-        ctx.strokeStyle = axisColor;
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(x, pT + plotH); ctx.lineTo(x, pT + plotH + 4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x, pT + plotH); ctx.lineTo(x, pT + plotH + 5); ctx.stroke();
         ctx.fillStyle = textColor;
-        ctx.font = ${isMobile ? 8.5 : 9.5}px Cairo, sans-serif;
+        ctx.font = (isMobile ? 9 : 9.5) + 'px Cairo, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(pct + '%', x, pT + plotH + (isMobile ? 15 : 18));
+        ctx.fillText(pct + '%', x, pT + plotH + (isMobile ? 16 : 19));
     });
 
-    // X-axis title
     ctx.fillStyle = textColor;
-    ctx.font = ${isMobile ? 7.5 : 9}px Cairo, sans-serif;
+    ctx.font = (isMobile ? 7.5 : 9) + 'px Cairo, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('\u0646\u0633\u0628\u0629 \u0627\u0644\u062f\u0631\u062c\u0627\u062a \u2014 \u0643\u0644 \u0634\u0631\u064a\u0637 = \u0646\u0637\u0627\u0642 5%', pL + plotW / 2, H - (isMobile ? 3 : 5));
+    ctx.fillText('\u0646\u0633\u0628\u0629 \u0627\u0644\u062f\u0631\u062c\u0627\u062a \u2014 \u0643\u0644 \u0634\u0631\u064a\u0637 = \u0646\u0637\u0627\u0642 5% (\u0627\u0644\u0646\u0627\u062c\u062d\u0648\u0646 \u0641\u0642\u0637)', pL + plotW / 2, H - (isMobile ? 3 : 5));
 
-    // 8. Mean line
+    // 9. Mean line (gold dashed)
     const meanX = xOf(meanPct);
     ctx.save();
     ctx.setLineDash([6, 4]);
@@ -747,72 +756,73 @@ function drawHistogram(canvas, curveData, rawColor, branchData) {
     ctx.lineWidth = 2;
     ctx.shadowColor = avgColor;
     ctx.shadowBlur = 8;
-    ctx.beginPath(); ctx.moveTo(meanX, pT + 4); ctx.lineTo(meanX, pT + plotH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(meanX, pT + 5); ctx.lineTo(meanX, pT + plotH); ctx.stroke();
     ctx.shadowBlur = 0;
     ctx.restore();
 
     const meanLabel = '\u0645\u062a\u0648\u0633\u0637: ' + meanPct.toFixed(1) + '%';
-    ctx.font = boldFont;
+    ctx.font = 'bold ' + (isMobile ? 9 : 10) + 'px Cairo, sans-serif';
     ctx.textAlign = 'center';
     const mlW = ctx.measureText(meanLabel).width + 14;
     const mlX = Math.max(pL + mlW/2 + 2, Math.min(meanX, pL + plotW - mlW/2 - 4));
-    ctx.fillStyle = isLight ? 'rgba(212,163,115,0.2)' : 'rgba(212,163,115,0.25)';
-    ctx.beginPath(); ctx.roundRect(mlX - mlW/2, pT + 6, mlW, 19, 5); ctx.fill();
+    ctx.fillStyle = isLight ? 'rgba(212,163,115,0.2)' : 'rgba(212,163,115,0.28)';
+    ctx.beginPath(); ctx.roundRect(mlX - mlW/2, pT + 8, mlW, 19, 5); ctx.fill();
     ctx.fillStyle = avgColor;
-    ctx.fillText(meanLabel, mlX, pT + 19);
+    ctx.fillText(meanLabel, mlX, pT + 22);
 
-    // 9. Pass 50% line
-    const pass50X = xOf(50);
-    ctx.save();
-    ctx.setLineDash([4, 5]);
-    ctx.strokeStyle = passColor + 'AA';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(pass50X, pT); ctx.lineTo(pass50X, pT + plotH); ctx.stroke();
-    ctx.restore();
+    // 10. Peak label above peak bar
+    const peakBarCX = xOf(peakStart) + barGap + barW / 2;
+    const peakBarTopY = yOf(maxCount);
+    const peakLabel = '\u0627\u0644\u0630\u0631\u0648\u0629: ' + peakStart + '\u2013' + peakEnd + '%';
+    ctx.font = 'bold ' + (isMobile ? 9 : 10) + 'px Cairo, sans-serif';
+    const plW = ctx.measureText(peakLabel).width + 14;
+    const plX = Math.max(pL + plW/2 + 2, Math.min(peakBarCX, pL + plotW - plW/2 - 4));
+    const plY = Math.max(pT + 30, peakBarTopY - 22);
 
+    ctx.fillStyle = isLight ? 'rgba(167,139,250,0.2)' : 'rgba(167,139,250,0.28)';
+    ctx.beginPath(); ctx.roundRect(plX - plW/2, plY - 14, plW, 19, 5); ctx.fill();
+    ctx.fillStyle = peakColor;
+    ctx.shadowColor = peakColor;
+    ctx.shadowBlur = 5;
+    ctx.textAlign = 'center';
+    ctx.fillText(peakLabel, plX, plY);
+    ctx.shadowBlur = 0;
+
+    // 11. Legend (desktop)
     if (!isMobile) {
-        ctx.fillStyle = passColor + 'CC';
-        ctx.font = 'bold 8.5px Cairo, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('\u062d\u062f \u0627\u0644\u0646\u062c\u0627\u062d 50%', pass50X + 5, pT + (pT > 40 ? 30 : 22));
-    }
-
-    // 10. Legend (desktop only)
-    if (!isMobile) {
-        ctx.font = '9px Cairo, sans-serif';
         const items = [
-            { color: rawColor,  label: '\u0639\u062f\u062f \u0627\u0644\u0637\u0644\u0627\u0628 \u0641\u064a \u0643\u0644 \u0646\u0637\u0627\u0642 5%', dash: false },
-            { color: avgColor,  label: '\u0645\u062a\u0648\u0633\u0637 (' + meanPct.toFixed(1) + '%)', dash: true },
-            { color: passColor, label: '\u062d\u062f \u0627\u0644\u0646\u062c\u0627\u062d (50%)', dash: true },
+            { color: rawColor,  label: '\u062a\u0648\u0632\u064a\u0639 \u0627\u0644\u0646\u0627\u062c\u062d\u064a\u0646 (\u0643\u0644 \u0634\u0631\u064a\u0637 = 5%)', dash: false },
+            { color: avgColor,  label: '\u0645\u062a\u0648\u0633\u0637 \u0627\u0644\u0646\u0627\u062c\u062d\u064a\u0646 (' + meanPct.toFixed(1) + '%)', dash: true },
+            { color: peakColor, label: '\u0630\u0631\u0648\u0629 \u0627\u0644\u062a\u0648\u0632\u064a\u0639 (' + peakStart + '\u2013' + peakEnd + '%)', dash: false },
         ];
         let lx = pL;
-        const ly = pT - 22;
+        const ly = pT - 28;
+        ctx.font = '9px Cairo, sans-serif';
         items.forEach(item => {
             const tw = ctx.measureText(item.label).width;
             if (item.dash) {
-                ctx.save(); ctx.setLineDash([5,3]);
+                ctx.save(); ctx.setLineDash([5, 3]);
                 ctx.strokeStyle = item.color; ctx.lineWidth = 2;
                 ctx.beginPath(); ctx.moveTo(lx, ly+6); ctx.lineTo(lx+20, ly+6); ctx.stroke();
                 ctx.restore();
             } else {
-                const g2 = ctx.createLinearGradient(lx, ly, lx+20, ly);
-                g2.addColorStop(0, item.color + 'CC');
-                g2.addColorStop(1, item.color + '44');
+                const g2 = ctx.createLinearGradient(lx, ly, lx+20, ly+11);
+                g2.addColorStop(0, item.color + 'CC'); g2.addColorStop(1, item.color + '44');
                 ctx.fillStyle = g2;
-                ctx.beginPath(); ctx.roundRect(lx, ly, 20, 11, 2); ctx.fill();
+                ctx.beginPath(); ctx.roundRect(lx, ly, 20, 11, 3); ctx.fill();
             }
             ctx.fillStyle = textColor;
             ctx.textAlign = 'left';
             ctx.fillText(item.label, lx + 24, ly + 9);
-            lx += 26 + tw + 16;
+            lx += 26 + tw + 14;
         });
     }
 }
 
-// Alias
 function drawCurve(canvas, curveData, rawColor, branchData) {
     drawHistogram(canvas, curveData, rawColor, branchData);
 }
+
 
 
 // ── Build Branch Panel ───────────────────────────────
@@ -922,11 +932,14 @@ function drawAll() {
         const canvas = document.getElementById(id);
         if (!canvas || !analyticsData?.[branch]?.curve) return;
         drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor, analyticsData[branch]);
-        // Update peak badge
+        // Update badge — mean of passed students (>=50%) only
         const curve = analyticsData[branch].curve;
-        const peak = curve.reduce((a, b) => b[1] > a[1] ? b : a);
+        let bSum = 0, bN = 0;
+        curve.forEach(([p,c]) => { if (p >= 50) { bSum += p*c; bN += c; } });
+        const bMean = bN > 0 ? (bSum/bN).toFixed(1) : '?';
+        const peakBin = curve.filter(([p]) => p >= 50).reduce((a,b) => b[1] > a[1] ? b : a, [50,0]);
         const badge = document.getElementById(`peak-${id}`);
-        if (badge) badge.textContent = `📍 ذروة التوزيع عند ${peak[0].toFixed(1)}%`;
+        if (badge) badge.textContent = `📊 متوسط الناجحين: ${bMean}% | الذروة: ${peakBin[0].toFixed(0)}-${(+peakBin[0]+5).toFixed(0)}%`;
     });
 }
 
@@ -942,9 +955,13 @@ function switchBranch(branch, btn) {
         const canvas = document.getElementById(id);
         if (canvas && analyticsData?.[branch]?.curve) {
             drawCurve(canvas, analyticsData[branch].curve, BRANCH_CFG[branch].rawColor, analyticsData[branch]);
-            const peak = analyticsData[branch].curve.reduce((a, b) => b[1] > a[1] ? b : a);
+            const sc2 = analyticsData[branch].curve;
+            let s2Sum = 0, s2N = 0;
+            sc2.forEach(([p,c]) => { if (p >= 50) { s2Sum += p*c; s2N += c; } });
+            const s2Mean = s2N > 0 ? (s2Sum/s2N).toFixed(1) : '?';
+            const s2Peak = sc2.filter(([p]) => p >= 50).reduce((a,b) => b[1] > a[1] ? b : a, [50,0]);
             const badge = document.getElementById(`peak-${id}`);
-            if (badge) badge.textContent = `📍 ذروة التوزيع عند ${peak[0].toFixed(1)}%`;
+            if (badge) badge.textContent = `📊 متوسط الناجحين: ${s2Mean}% | الذروة: ${s2Peak[0].toFixed(0)}-${(+s2Peak[0]+5).toFixed(0)}%`;
         }
     }, 60);
 }
