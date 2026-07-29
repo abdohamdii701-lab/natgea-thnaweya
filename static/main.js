@@ -486,7 +486,7 @@ function drawBellCurve(studentPercent) {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    # Outer Glowing Dot
+    // Outer Glowing Dot
     ctx.beginPath();
     ctx.arc(padding + studentPx, studentPy, 10, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
