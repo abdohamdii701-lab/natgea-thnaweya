@@ -901,39 +901,49 @@ async function renderTansiqPredictor(student) {
                 container.style.display = 'block';
                 const subtextEl = container.querySelector('.tansiq-subtext');
                 if (subtextEl) {
-                    subtextEl.innerText = `محاكاة ذكية لاحتمالية القبول بقطاعات (${trackLabel}) بناءً على نتائج الحدود الأدنى 2023 - 2025`;
+                    subtextEl.innerText = `محاكاة واقعية لاحتمالية القبول بقطاعات (${trackLabel}) بناءً على التنسيق الرسمي لآخر سنتين (2024 - 2025)`;
                 }
 
                 trackSectors.forEach(sec => {
-                    // Mathematically sound and fair 5-stage admission probability algorithm
+                    // Realistic & Conservative Admission Probability Algorithm (2-Year Ministry Data 2024-2025)
+                    let prob = 50;
+                    let probLabel = '🟡 فرصة محتملة';
+                    let badgeClass = 'prob-med';
+                    let barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
+
                     if (stPct >= sec.max_pct) {
-                        const bonus = Math.min(4, (stPct - sec.max_pct) * 1.5);
-                        prob = 95 + bonus;
+                        const bonus = Math.min(4, (stPct - sec.max_pct) * 1.2);
+                        prob = Math.round(92 + bonus);
                         probLabel = '🟢 فرصة مؤكدة جداً';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
                     } else if (stPct >= sec.avg_pct) {
                         const ratio = (stPct - sec.avg_pct) / (sec.max_pct - sec.avg_pct || 1);
-                        prob = 80 + ratio * 14;
-                        probLabel = '🟢 فرصة قوية جداً';
+                        prob = Math.round(75 + ratio * 16);
+                        probLabel = '🟢 فرصة قوية';
                         badgeClass = 'prob-high';
                         barColor = 'linear-gradient(90deg, #10b981, #34d399)';
                     } else if (stPct >= sec.min_pct) {
                         const ratio = (stPct - sec.min_pct) / (sec.avg_pct - sec.min_pct || 1);
-                        prob = 50 + ratio * 29;
+                        prob = Math.round(50 + ratio * 24);
                         probLabel = '🟡 فرصة محتملة';
                         badgeClass = 'prob-med';
                         barColor = 'linear-gradient(90deg, #f59e0b, #eab308)';
-                    } else if (stPct >= sec.min_pct - 2.0) {
-                        const ratio = (stPct - (sec.min_pct - 2.0)) / 2.0;
-                        prob = 20 + ratio * 29;
-                        probLabel = '🟠 فرصة حديّة (ضعيفة)';
+                    } else if (stPct >= sec.min_pct - 0.75) {
+                        const ratio = (stPct - (sec.min_pct - 0.75)) / 0.75;
+                        prob = Math.round(25 + ratio * 24);
+                        probLabel = '🟠 فرصة حديّة ضئيلة';
                         badgeClass = 'prob-med';
                         barColor = 'linear-gradient(90deg, #f97316, #fb923c)';
+                    } else if (stPct >= sec.min_pct - 2.0) {
+                        const ratio = (stPct - (sec.min_pct - 2.0)) / 1.25;
+                        prob = Math.round(10 + ratio * 14);
+                        probLabel = '🔴 فرصة ضئيلة جداً';
+                        badgeClass = 'prob-low';
+                        barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
                     } else {
-                        const diff = sec.min_pct - stPct;
-                        prob = Math.max(5, Math.round(18 - diff * 2.5));
-                        probLabel = '🔴 فرصة ضئيلة';
+                        prob = Math.max(2, Math.round(8 - (sec.min_pct - 2.0 - stPct) * 1.5));
+                        probLabel = '🔴 فرصة شبه معدومة';
                         badgeClass = 'prob-low';
                         barColor = 'linear-gradient(90deg, #ef4444, #f87171)';
                     }
