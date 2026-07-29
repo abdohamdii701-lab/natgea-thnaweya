@@ -131,7 +131,8 @@ async function performSearch(query, mode) {
                         arabic_name: st.n,
                         total_degree: st.d,
                         student_case_desc: st.c,
-                        percentage: st.p
+                        percentage: st.p,
+                        branch_name: st.b
                     });
                     finishSearch(submitBtn, btnText, spinner);
                     return;
@@ -151,7 +152,6 @@ async function performSearch(query, mode) {
             const prefix = firstWord.length >= 2 ? firstWord.substring(0, 2) : (firstWord.substring(0, 1) || "ot");
             
             try {
-                // Try URL encoded prefix first, then raw prefix
                 let res = await fetch(`static/data/names/${encodeURIComponent(prefix)}.json`);
                 if (!res.ok) {
                     res = await fetch(`static/data/names/${prefix}.json`);
@@ -175,7 +175,8 @@ async function performSearch(query, mode) {
                             arabic_name: st.n,
                             total_degree: st.d,
                             student_case_desc: st.c,
-                            percentage: st.p
+                            percentage: st.p,
+                            branch_name: st.b
                         }));
                         if (formatted.length === 1) {
                             renderSingleStudent(formatted[0]);
@@ -229,7 +230,9 @@ function renderSingleStudent(student) {
     resProgressBar.style.width = `${Math.min(student.percentage, 100)}%`;
 
     const officialStatus = student.student_case_desc || (student.total_degree >= 160 ? 'ناجح دور أول' : 'له دور ثاني');
-    statusBadge.textContent = officialStatus;
+    const branchName = student.branch_name || student.b || '';
+    
+    statusBadge.textContent = branchName ? `${officialStatus} • ${branchName}` : officialStatus;
 
     if (officialStatus.includes('ناجح')) {
         statusBadge.style.background = 'rgba(16, 185, 129, 0.2)';
@@ -287,12 +290,14 @@ function renderStudentList(students) {
         const tr = document.createElement('tr');
         tr.onclick = () => selectStudent(st.seating_no);
         const statusText = st.student_case_desc || (st.total_degree >= 160 ? 'ناجح' : 'دور ثان');
+        const branchText = st.branch_name || st.b || '';
+        const badgeInfo = branchText ? `${statusText} - ${branchText}` : statusText;
         tr.innerHTML = `
             <td>${index + 1}</td>
             <td><strong>${st.seating_no}</strong></td>
             <td>${st.arabic_name}</td>
             <td>${st.total_degree}</td>
-            <td><span class="badge-percent">${st.percentage}%</span> (${statusText})</td>
+            <td><span class="badge-percent">${st.percentage}%</span> (${badgeInfo})</td>
             <td><button class="btn btn-outline btn-sm" onclick="selectStudent('${st.seating_no}')">عرض النتيجة</button></td>
         `;
         matchTableBody.appendChild(tr);
