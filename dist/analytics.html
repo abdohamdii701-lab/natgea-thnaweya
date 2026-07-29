@@ -611,6 +611,7 @@
                 </button>
             </div>
 
+            <div id="stage1Banner"></div>
             <div class="tansiq-grid" id="tansiqGrid2026"></div>
         </section>
 
@@ -1103,30 +1104,69 @@ async function init() {
 }
 
 
+
 let tansiqData2026 = null;
 
 async function loadTansiq2026() {
     try {
         const res = await fetch('static/data/tansiq.json');
         tansiqData2026 = await res.json();
+        renderStage1Banner('science_bio');
         renderTansiqTrack('science_bio');
     } catch (e) {
         console.error('Failed to load tansiq2026 data:', e);
     }
 }
 
-function renderTansiqTrack(track) {
+function renderStage1Banner(track) {
+    const bannerContainer = document.getElementById('stage1Banner');
+    if (!bannerContainer || !tansiqData2026 || !tansiqData2026.stage1_limits) return;
+
+    const s1 = tansiqData2026.stage1_limits[track];
+    if (!s1) return;
+
+    bannerContainer.innerHTML = `
+        <div style="background: linear-gradient(135deg, rgba(212,163,115,0.18), rgba(88,129,87,0.12)); border:1px solid var(--bg-card-border); border-radius: var(--radius-md); padding: 1rem 1.2rem; margin-bottom: 1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.75rem;">
+            <div>
+                <span style="background:var(--primary); color:#fff; font-size:0.75rem; font-weight:800; padding:2px 10px; border-radius:12px; margin-left:6px;">🥇 حد المرحلة الأولى</span>
+                <strong style="font-size:1rem; color:var(--text-main);">${s1.name}</strong>
+            </div>
+            <div style="display:flex; align-items:baseline; gap:12px;">
+                <div>
+                    <span style="font-size:0.78rem; color:var(--text-muted);">الحد الأدنى للمرحلة الأولى: </span>
+                    <strong style="font-size:1.3rem; color:var(--primary); font-weight:900;">${s1.min_pct}%</strong>
+                    <span style="font-size:0.85rem; color:var(--text-muted);">(${s1.min_deg} درجة)</span>
+                </div>
+                <div style="font-size:0.78rem; color:var(--text-muted); border-right:1px solid var(--bg-card-border); padding-right:10px;">
+                    العام الماضي: <strong>${s1.min_pct_2025}%</strong>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderTansiqTrack(track, filterStage = 'all') {
     if (!tansiqData2026 || !tansiqData2026.sectors) return;
     const grid = document.getElementById('tansiqGrid2026');
     if (!grid) return;
 
-    const filtered = tansiqData2026.sectors.filter(s => s.track === track);
+    let filtered = tansiqData2026.sectors.filter(s => s.track === track);
+    if (filterStage === 'stage1') {
+        filtered = filtered.filter(s => s.stage === 1);
+    }
+
     grid.innerHTML = filtered.map(s => {
         const shiftText = s.shift < 0 ? `📉 انخفاض متوقع (${s.shift}%)` : `↔️ استقرار متوقع`;
+        const stageBadge = s.stage === 1 ? `<span style="background:rgba(212,163,115,0.2); color:var(--primary); border:1px solid rgba(212,163,115,0.4); font-size:0.7rem; font-weight:800; padding:2px 8px; border-radius:12px;">🥇 مرحلة أولى</span>` : `<span style="background:rgba(150,150,150,0.15); color:var(--text-muted); border:1px solid rgba(150,150,150,0.2); font-size:0.7rem; font-weight:600; padding:2px 8px; border-radius:12px;">🥈 مرحلة ثانية</span>`;
+        const noteText = s.note ? `<div style="font-size:0.72rem; color:var(--gold); margin-top:0.4rem; background:rgba(230,197,148,0.08); padding:4px 8px; border-radius:6px; border:1px dashed rgba(230,197,148,0.2);">💡 ${s.note}</div>` : '';
+
         return `
-        <div class="tansiq-card">
+        <div class="tansiq-card" style="${s.stage === 1 ? 'border-color:rgba(212,163,115,0.4);' : ''}">
             <div class="tansiq-header">
-                <span class="tansiq-title">${s.name}</span>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <span class="tansiq-title">${s.name}</span>
+                    ${stageBadge}
+                </div>
                 <span class="tansiq-badge-shift">${shiftText}</span>
             </div>
             <div class="tansiq-meta">
@@ -1142,6 +1182,7 @@ function renderTansiqTrack(track) {
             <div class="tansiq-cap-tag">
                 🏛️ السعة الحكومية التقديرية: <strong>${fmtAr(s.capacity)} طالب</strong>
             </div>
+            ${noteText}
         </div>`;
     }).join('');
 }
@@ -1149,8 +1190,10 @@ function renderTansiqTrack(track) {
 function switchTansiqTrack(track, btn) {
     document.querySelectorAll('[data-ttrack]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
+    renderStage1Banner(track);
     renderTansiqTrack(track);
 }
+
 
 loadTansiq2026();
 init();
