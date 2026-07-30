@@ -3,6 +3,7 @@ import sqlite3
 import os
 import zipfile
 import re
+import json
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder='static', template_folder=BASE_DIR)
@@ -11,10 +12,25 @@ IS_VERCEL = os.environ.get('VERCEL') == '1' or 'VERCEL' in os.environ
 
 if IS_VERCEL:
     DB_PATH = "/tmp/Stage_New_Search.db"
+    VISITS_FILE = "/tmp/visits.json"
 else:
     DB_PATH = os.path.join(BASE_DIR, "Stage_New_Search.db")
+    VISITS_FILE = os.path.join(BASE_DIR, "visits.json")
 
 ZIP_PATH = os.path.join(BASE_DIR, "Stage_New_Search_db.zip")
+
+def get_real_visits():
+    count = 1
+    if os.path.exists(VISITS_FILE):
+        try:
+            with open(VISITS_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                count = data.get('count', 0) + 1
+        except:
+            count = 1
+    with open(VISITS_FILE, 'w', encoding='utf-8') as f:
+        json.dump({'count': count}, f)
+    return count
 
 def normalize_arabic(text):
     if not text:
@@ -60,6 +76,11 @@ def analytics():
 def predictions():
     return send_from_directory(BASE_DIR, 'predictions.html')
 
+@app.route('/api/visitor_count', methods=['GET', 'POST'])
+def visitor_count():
+    count = get_real_visits()
+    return jsonify({'count': count})
+
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('q', '').strip()
@@ -71,7 +92,6 @@ def search():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 1. If query contains digits, try exact seating_no search first
     if query.isdigit():
         cursor.execute("""
             SELECT seating_no, arabic_name, total_degree, student_case_desc 
@@ -86,7 +106,6 @@ def search():
             conn.close()
             return jsonify({'type': 'single', 'data': student})
 
-    # 2. Fallback to tokenized Arabic Name search (handles mistakes smoothly)
     raw_tokens = [t for t in query.split() if t]
     if not raw_tokens:
         conn.close()
