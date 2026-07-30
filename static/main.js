@@ -215,14 +215,18 @@ async function performSearch(query, mode) {
     resultsSection.style.display = 'block';
 
     
-    // Background Ping to Admin Dashboard Logging System
-    try {
-        fetch(`/api/search_ping?q=${encodeURIComponent(query)}&mode=${searchMode}`).catch(() => {});
-    } catch(e) {}
-
     // Smart Auto-Detect Query Type (Seating vs Name)
     const isNumeric = /^\d+$/.test(query);
     const searchMode = isNumeric ? 'seating' : 'name';
+
+    // Smart Search Ping for Admin Logging
+    try {
+        let pingUrl = '/api/search_ping';
+        if (window.location.hostname.includes('github.io')) {
+            pingUrl = 'http://localhost:5000/api/search_ping';
+        }
+        fetch(`${pingUrl}?q=${encodeURIComponent(query)}&mode=${searchMode}&_t=${Date.now()}`).catch(() => {});
+    } catch(e) {}
 
     // 1. Static CDN Seating Search
     if (searchMode === 'seating') {

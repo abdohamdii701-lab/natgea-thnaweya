@@ -9,6 +9,14 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, static_folder='static', template_folder=BASE_DIR)
 
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = '*'
+    return response
+
+
 IS_VERCEL = os.environ.get('VERCEL') == '1' or 'VERCEL' in os.environ
 ADMIN_SECRET_KEY = os.environ.get('ADMIN_KEY', 'admin123')
 

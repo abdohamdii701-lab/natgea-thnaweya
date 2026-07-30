@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+admin_html_updated = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -189,16 +191,16 @@
 
                 <div>
                     <label style="display:block; font-size:0.8rem; text-align:right; color:var(--text-muted); margin-bottom:4px; font-weight:700;">رابط سيرفر البايثون (اتركه كما هو إذا كنت تعمل محلياً)</label>
-                    <input type="text" id="serverUrlInput" class="styled-input" placeholder="مثال: https://natgea-thnaweya.abdohamdii701.workers.dev أو Vercel أو Localhost">
+                    <input type="text" id="serverUrlInput" class="styled-input" placeholder="مثال: http://localhost:5000 أو رابط Render/Vercel">
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="justify-content:center;">🔓 دخول اللوحة</button>
             </form>
 
             <div id="githubPagesNotice" class="server-notice" style="display: none;">
-                💡 <strong>ملاحظة هامة (GitHub Pages):</strong> استضافة GitHub Pages تقوم باستضافة ملفات الواجهة فقط.<br>
-                • لتصفح السجل من جهازك: افتح السيرفر المحلي <a href="http://localhost:5000/admin.html" target="_blank" style="color:var(--primary); font-weight:800;">http://localhost:5000/admin.html</a>.<br>
-                • تم تفعيل الربط التلقائي بـ <code>http://localhost:5000</code> لتعمل اللوحة فوراً.
+                💡 <strong>ملاحظة هامة (GitHub Pages):</strong> استضافة GitHub Pages تقوم باستضافة ملفات التصميم فقط ولا تملك سيرفر بايثون لملف <code>app.py</code>.<br>
+                • للوصول للوحة على جهازك: افتح الرابط المحلـي <a href="http://localhost:5000/admin.html" target="_blank" style="color:var(--primary); font-weight:800;">http://localhost:5000/admin.html</a>.<br>
+                • أو أدخل رابط سيرفر البايثون الخاص بك في الخانة أعلاه.
             </div>
         </div>
 
@@ -213,7 +215,7 @@
                     </div>
                 </div>
                 <div style="display:flex; gap:0.5rem; align-items:center;">
-                    <button id="autoRefreshBtn" class="refresh-btn">🔄 تحديث تلقائي: قادم خلال (<span id="timerVal">5</span>ث)</button>
+                    <button id="autoRefreshBtn" class="refresh-btn">🔄 تحديث تلقائي: مفعّل (5ث)</button>
                     <button id="manualRefreshBtn" class="refresh-btn">⚡ تحديث الآن</button>
                 </div>
             </div>
@@ -290,15 +292,15 @@
 
     <script>
         let adminKey = localStorage.getItem('admin_secret_key') || '';
-        let serverUrl = localStorage.getItem('admin_server_url') || 'https://natgea-thnaweya.abdohamdii701.workers.dev';
-        let countdownTimer = 5;
+        let serverUrl = localStorage.getItem('admin_server_url') || '';
+        let autoRefreshInterval = null;
         let isAutoRefresh = true;
-        let timerInterval = null;
 
+        // Auto detect GitHub Pages
         if (window.location.hostname.includes('github.io')) {
             document.getElementById('githubPagesNotice').style.display = 'block';
             if (!serverUrl) {
-                serverUrl = 'http://localhost:5000';
+                serverUrl = 'http://localhost:5000'; // Default fallback for GitHub Pages users
             }
         }
 
@@ -336,28 +338,11 @@
             fetchDashboardData();
         }
 
-        // Live 5-second countdown loop
-        function startCountdown() {
-            if (timerInterval) clearInterval(timerInterval);
-            countdownTimer = 5;
-            document.getElementById('timerVal').textContent = countdownTimer;
-
-            timerInterval = setInterval(() => {
-                if (!isAutoRefresh) return;
-                countdownTimer--;
-                if (countdownTimer <= 0) {
-                    countdownTimer = 5;
-                    fetchDashboardData();
-                }
-                document.getElementById('timerVal').textContent = countdownTimer;
-            }, 1000);
-        }
-
         async function fetchDashboardData() {
             let baseUrl = serverUrl.replace(/\/$/, '');
-            let endpoint = `${baseUrl}/api/admin/logs?key=${encodeURIComponent(adminKey)}&_t=${Date.now()}`;
+            let endpoint = `${baseUrl}/api/admin/logs?key=${encodeURIComponent(adminKey)}`;
             if (!baseUrl && !window.location.hostname.includes('github.io')) {
-                endpoint = `/api/admin/logs?key=${encodeURIComponent(adminKey)}&_t=${Date.now()}`;
+                endpoint = `/api/admin/logs?key=${encodeURIComponent(adminKey)}`;
             }
 
             try {
@@ -375,8 +360,8 @@
                     document.getElementById('dashboardSection').style.display = 'block';
                     renderDashboard(data);
                     
-                    if (isAutoRefresh && !timerInterval) {
-                        startCountdown();
+                    if (isAutoRefresh && !autoRefreshInterval) {
+                        autoRefreshInterval = setInterval(fetchDashboardData, 5000);
                     }
                 } else if (res.status === 404) {
                     document.getElementById('authSection').style.display = 'block';
@@ -430,24 +415,27 @@
             });
         }
 
-        document.getElementById('manualRefreshBtn').addEventListener('click', () => {
-            fetchDashboardData();
-            countdownTimer = 5;
-            document.getElementById('timerVal').textContent = countdownTimer;
-        });
-
+        document.getElementById('manualRefreshBtn').addEventListener('click', fetchDashboardData);
         document.getElementById('autoRefreshBtn').addEventListener('click', () => {
             isAutoRefresh = !isAutoRefresh;
             const btn = document.getElementById('autoRefreshBtn');
             if (isAutoRefresh) {
-                btn.innerHTML = '🔄 تحديث تلقائي: قادم خلال (<span id="timerVal">5</span>ث)';
-                startCountdown();
+                btn.textContent = "🔄 تحديث تلقائي: مفعّل (5ث)";
+                autoRefreshInterval = setInterval(fetchDashboardData, 5000);
             } else {
                 btn.textContent = "⏸️ تحديث تلقائي: متوقف";
-                clearInterval(timerInterval);
-                timerInterval = null;
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
             }
         });
     </script>
 </body>
 </html>
+"""
+
+locations = ['admin.html', 'dist/admin.html']
+for loc in locations:
+    with open(loc, 'w', encoding='utf-8') as f:
+        f.write(admin_html_updated)
+
+print("Updated admin.html in root and dist with GitHub Pages handling.")

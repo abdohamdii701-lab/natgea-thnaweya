@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+admin_html_updated = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -189,7 +191,7 @@
 
                 <div>
                     <label style="display:block; font-size:0.8rem; text-align:right; color:var(--text-muted); margin-bottom:4px; font-weight:700;">رابط سيرفر البايثون (اتركه كما هو إذا كنت تعمل محلياً)</label>
-                    <input type="text" id="serverUrlInput" class="styled-input" placeholder="مثال: https://natgea-thnaweya.abdohamdii701.workers.dev أو Vercel أو Localhost">
+                    <input type="text" id="serverUrlInput" class="styled-input" placeholder="مثال: http://localhost:5000 أو اتركه فارغاً للوضع المباشر">
                 </div>
 
                 <button type="submit" class="btn btn-primary" style="justify-content:center;">🔓 دخول اللوحة</button>
@@ -290,7 +292,7 @@
 
     <script>
         let adminKey = localStorage.getItem('admin_secret_key') || '';
-        let serverUrl = localStorage.getItem('admin_server_url') || 'https://natgea-thnaweya.abdohamdii701.workers.dev';
+        let serverUrl = localStorage.getItem('admin_server_url') || '';
         let countdownTimer = 5;
         let isAutoRefresh = true;
         let timerInterval = null;
@@ -451,3 +453,11 @@
     </script>
 </body>
 </html>
+"""
+
+locations = ['admin.html', 'dist/admin.html']
+for loc in locations:
+    with open(loc, 'w', encoding='utf-8') as f:
+        f.write(admin_html_updated)
+
+print("Updated admin.html in root and dist with visual live 5-second countdown timer.")

@@ -29,8 +29,8 @@
         .admin-title h2 { font-size: 1.6rem; font-weight: 900; }
 
         .auth-card {
-            max-width: 450px;
-            margin: 4rem auto;
+            max-width: 480px;
+            margin: 3rem auto;
             background: var(--bg-card);
             border: 1px solid var(--bg-card-border);
             backdrop-filter: var(--glass-blur);
@@ -41,6 +41,19 @@
         }
         .auth-card h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.6rem; }
         .auth-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+        /* Server Notice Banner */
+        .server-notice {
+            margin-top: 1rem;
+            padding: 0.9rem;
+            border-radius: var(--radius-md);
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--gold);
+            font-size: 0.82rem;
+            text-align: right;
+            line-height: 1.5;
+        }
 
         /* Overview Grid */
         .admin-stats-grid {
@@ -167,10 +180,26 @@
             <div style="font-size:3rem; margin-bottom:0.5rem;">🔐</div>
             <h3>تسجيل دخول لوحة الإدارة</h3>
             <p>أدخل كلمة سر الإدارة للوصول لسجل عمليات البحث وعناوين الـ IP للزوار</p>
+
             <form id="authForm" style="display:flex; flex-direction:column; gap:1rem;">
-                <input type="password" id="adminKeyInput" class="styled-input" placeholder="أدخل كلمة السر (Default: admin123)..." required autofocus>
+                <div>
+                    <label style="display:block; font-size:0.8rem; text-align:right; color:var(--text-muted); margin-bottom:4px; font-weight:700;">كلمة سر الإدارة (Default: admin123)</label>
+                    <input type="password" id="adminKeyInput" class="styled-input" placeholder="أدخل كلمة السر (admin123)..." required autofocus>
+                </div>
+
+                <div>
+                    <label style="display:block; font-size:0.8rem; text-align:right; color:var(--text-muted); margin-bottom:4px; font-weight:700;">رابط سيرفر البايثون (اتركه كما هو إذا كنت تعمل محلياً)</label>
+                    <input type="text" id="serverUrlInput" class="styled-input" placeholder="مثال: https://natgea-thnaweya.abdohamdii701.workers.dev أو Vercel أو Localhost">
+                </div>
+
                 <button type="submit" class="btn btn-primary" style="justify-content:center;">🔓 دخول اللوحة</button>
             </form>
+
+            <div id="githubPagesNotice" class="server-notice" style="display: none;">
+                💡 <strong>ملاحظة هامة (GitHub Pages):</strong> استضافة GitHub Pages تقوم باستضافة ملفات الواجهة فقط.<br>
+                • لتصفح السجل من جهازك: افتح السيرفر المحلي <a href="http://localhost:5000/admin.html" target="_blank" style="color:var(--primary); font-weight:800;">http://localhost:5000/admin.html</a>.<br>
+                • تم تفعيل الربط التلقائي بـ <code>http://localhost:5000</code> لتعمل اللوحة فوراً.
+            </div>
         </div>
 
         <!-- Dashboard Content Section -->
@@ -184,7 +213,7 @@
                     </div>
                 </div>
                 <div style="display:flex; gap:0.5rem; align-items:center;">
-                    <button id="autoRefreshBtn" class="refresh-btn">🔄 تحديث تلقائي: مفعّل (5ث)</button>
+                    <button id="autoRefreshBtn" class="refresh-btn">🔄 تحديث تلقائي: قادم خلال (<span id="timerVal">5</span>ث)</button>
                     <button id="manualRefreshBtn" class="refresh-btn">⚡ تحديث الآن</button>
                 </div>
             </div>
@@ -261,8 +290,20 @@
 
     <script>
         let adminKey = localStorage.getItem('admin_secret_key') || '';
-        let autoRefreshInterval = null;
+        let serverUrl = localStorage.getItem('admin_server_url') || 'https://natgea-thnaweya.abdohamdii701.workers.dev';
+        let countdownTimer = 5;
         let isAutoRefresh = true;
+        let timerInterval = null;
+
+        if (window.location.hostname.includes('github.io')) {
+            document.getElementById('githubPagesNotice').style.display = 'block';
+            if (!serverUrl) {
+                serverUrl = 'http://localhost:5000';
+            }
+        }
+
+        document.getElementById('adminKeyInput').value = adminKey;
+        document.getElementById('serverUrlInput').value = serverUrl;
 
         // Theme toggle
         function applyTheme(dark) {
@@ -279,12 +320,15 @@
             applyTheme(saved === 'dark');
         })();
 
-        // Handle Auth
+        // Handle Auth Form
         document.getElementById('authForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const inputKey = document.getElementById('adminKeyInput').value.trim();
-            adminKey = inputKey;
+            adminKey = document.getElementById('adminKeyInput').value.trim();
+            serverUrl = document.getElementById('serverUrlInput').value.trim();
+            
             localStorage.setItem('admin_secret_key', adminKey);
+            localStorage.setItem('admin_server_url', serverUrl);
+
             fetchDashboardData();
         });
 
@@ -292,9 +336,32 @@
             fetchDashboardData();
         }
 
+        // Live 5-second countdown loop
+        function startCountdown() {
+            if (timerInterval) clearInterval(timerInterval);
+            countdownTimer = 5;
+            document.getElementById('timerVal').textContent = countdownTimer;
+
+            timerInterval = setInterval(() => {
+                if (!isAutoRefresh) return;
+                countdownTimer--;
+                if (countdownTimer <= 0) {
+                    countdownTimer = 5;
+                    fetchDashboardData();
+                }
+                document.getElementById('timerVal').textContent = countdownTimer;
+            }, 1000);
+        }
+
         async function fetchDashboardData() {
+            let baseUrl = serverUrl.replace(/\/$/, '');
+            let endpoint = `${baseUrl}/api/admin/logs?key=${encodeURIComponent(adminKey)}&_t=${Date.now()}`;
+            if (!baseUrl && !window.location.hostname.includes('github.io')) {
+                endpoint = `/api/admin/logs?key=${encodeURIComponent(adminKey)}&_t=${Date.now()}`;
+            }
+
             try {
-                const res = await fetch(`/api/admin/logs?key=${encodeURIComponent(adminKey)}`);
+                const res = await fetch(endpoint);
                 if (res.status === 401 || res.status === 403) {
                     document.getElementById('authSection').style.display = 'block';
                     document.getElementById('dashboardSection').style.display = 'none';
@@ -308,12 +375,19 @@
                     document.getElementById('dashboardSection').style.display = 'block';
                     renderDashboard(data);
                     
-                    if (isAutoRefresh && !autoRefreshInterval) {
-                        autoRefreshInterval = setInterval(fetchDashboardData, 5000);
+                    if (isAutoRefresh && !timerInterval) {
+                        startCountdown();
                     }
+                } else if (res.status === 404) {
+                    document.getElementById('authSection').style.display = 'block';
+                    document.getElementById('dashboardSection').style.display = 'none';
+                    document.getElementById('githubPagesNotice').style.display = 'block';
                 }
             } catch (e) {
                 console.error("Dashboard fetch error", e);
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('dashboardSection').style.display = 'none';
+                document.getElementById('githubPagesNotice').style.display = 'block';
             }
         }
 
@@ -356,17 +430,22 @@
             });
         }
 
-        document.getElementById('manualRefreshBtn').addEventListener('click', fetchDashboardData);
+        document.getElementById('manualRefreshBtn').addEventListener('click', () => {
+            fetchDashboardData();
+            countdownTimer = 5;
+            document.getElementById('timerVal').textContent = countdownTimer;
+        });
+
         document.getElementById('autoRefreshBtn').addEventListener('click', () => {
             isAutoRefresh = !isAutoRefresh;
             const btn = document.getElementById('autoRefreshBtn');
             if (isAutoRefresh) {
-                btn.textContent = "🔄 تحديث تلقائي: مفعّل (5ث)";
-                autoRefreshInterval = setInterval(fetchDashboardData, 5000);
+                btn.innerHTML = '🔄 تحديث تلقائي: قادم خلال (<span id="timerVal">5</span>ث)';
+                startCountdown();
             } else {
                 btn.textContent = "⏸️ تحديث تلقائي: متوقف";
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
+                clearInterval(timerInterval);
+                timerInterval = null;
             }
         });
     </script>
