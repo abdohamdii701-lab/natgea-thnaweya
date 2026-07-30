@@ -6,22 +6,25 @@
       "name": "علمي علوم - المرحلة الأولى",
       "min_deg": 289.0,
       "min_pct": 90.31,
+      "min_deg_2025": 293.0,
       "min_pct_2025": 91.56,
       "status": "المرحلة الأولى الرسمية",
       "student_count": 28000
     },
     "science_math": {
       "name": "علمي رياضة - المرحلة الأولى",
-      "min_deg": 262.5,
-      "min_pct": 82.03,
+      "min_deg": 274.5,
+      "min_pct": 85.78,
+      "min_deg_2025": 283.0,
       "min_pct_2025": 88.44,
       "status": "المرحلة الأولى الرسمية",
       "student_count": 25500
     },
     "literary": {
       "name": "أدبي - المرحلة الأولى",
-      "min_deg": 267.0,
-      "min_pct": 83.83,
+      "min_deg": 235.0,
+      "min_pct": 73.44,
+      "min_deg_2025": 233.0,
       "min_pct_2025": 72.81,
       "status": "المرحلة الأولى الرسمية",
       "student_count": 15000
