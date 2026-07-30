@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify, render_template, send_from_directory
+import os
+
+app_py_updated = """from flask import Flask, request, jsonify, render_template, send_from_directory
 import sqlite3
 import os
 import zipfile
@@ -24,7 +26,7 @@ ZIP_PATH = os.path.join(BASE_DIR, "Stage_New_Search_db.zip")
 def init_logs_db(conn):
     try:
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(\"\"\"
             CREATE TABLE IF NOT EXISTS search_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 ip TEXT,
@@ -33,7 +35,7 @@ def init_logs_db(conn):
                 user_agent TEXT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
             )
-        """)
+        \"\"\")
         conn.commit()
     except Exception as e:
         print("Error initializing search_logs table:", e)
@@ -122,21 +124,6 @@ def visitor_count():
     count = get_real_visits()
     return jsonify({'count': count})
 
-
-@app.route('/api/search_ping', methods=['GET', 'POST'])
-def search_ping():
-    query = request.args.get('q', '').strip()
-    mode = request.args.get('mode', 'auto').strip()
-
-    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
-    if client_ip and ',' in client_ip:
-        client_ip = client_ip.split(',')[0].strip()
-    user_agent = request.headers.get('User-Agent', '')
-
-    if query:
-        log_search_event(client_ip, query, mode, user_agent)
-    return jsonify({'status': 'logged'})
-
 @app.route('/api/search', methods=['GET'])
 def search():
     query = request.args.get('q', '').strip()
@@ -151,18 +138,18 @@ def search():
     if not query:
         return jsonify({'error': 'يرجى كتابة رقم الجلوس أو اسم الطالب'}), 400
 
-    # Log the search event
+    # Log the search event asynchronously/immediately
     log_search_event(client_ip, query, mode, user_agent)
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
     if query.isdigit():
-        cursor.execute("""
+        cursor.execute(\"\"\"
             SELECT seating_no, arabic_name, total_degree, student_case_desc 
             FROM stage_new_search 
             WHERE seating_no = ?
-        """, (query,))
+        \"\"\", (query,))
         row = cursor.fetchone()
 
         if row:
@@ -177,13 +164,13 @@ def search():
         return jsonify({'type': 'list', 'data': [], 'count': 0})
 
     where_clauses = ["(normalized_name LIKE ? OR arabic_name LIKE ?)" for _ in raw_tokens]
-    sql = f"""
+    sql = f\"\"\"
         SELECT seating_no, arabic_name, total_degree, student_case_desc 
         FROM stage_new_search 
         WHERE {" AND ".join(where_clauses)}
         ORDER BY total_degree DESC 
         LIMIT 30
-    """
+    \"\"\"
     
     params = []
     for t in raw_tokens:
@@ -317,3 +304,9 @@ if __name__ == '__main__':
     print("Starting Natega Web Server on http://localhost:5000")
     print("Admin dashboard available at http://localhost:5000/admin.html")
     app.run(host='0.0.0.0', port=5000, debug=False)
+"""
+
+with open('app.py', 'w', encoding='utf-8') as f:
+    f.write(app_py_updated)
+
+print("Updated app.py with full admin logging and dashboard capabilities.")

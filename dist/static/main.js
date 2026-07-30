@@ -214,6 +214,12 @@ async function performSearch(query, mode) {
     hideResults();
     resultsSection.style.display = 'block';
 
+    
+    // Background Ping to Admin Dashboard Logging System
+    try {
+        fetch(`/api/search_ping?q=${encodeURIComponent(query)}&mode=${searchMode}`).catch(() => {});
+    } catch(e) {}
+
     // Smart Auto-Detect Query Type (Seating vs Name)
     const isNumeric = /^\d+$/.test(query);
     const searchMode = isNumeric ? 'seating' : 'name';
