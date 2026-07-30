@@ -505,56 +505,76 @@
 
 
 
+
+
 <script>
-    // Real Live Visitor Counter starting at 1.5M+ Baseline
-    (async function() {
+    // Bulletproof Real Visitor Counter
+    (function() {
         const BASE_OFFSET = 1542890;
-        let realVisits = 0;
 
-        // 1. Try local Flask backend API
-        try {
-            const res = await fetch('/api/visitor_count');
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.count) {
-                    realVisits = data.count;
-                }
+        function setUI(count) {
+            const formatted = Number(count).toLocaleString('ar-EG');
+            const update = () => {
+                document.querySelectorAll('.visit-count-val').forEach(el => {
+                    el.textContent = formatted;
+                });
+            };
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', update);
+            } else {
+                update();
             }
-        } catch (e) {}
+        }
 
-        // 2. If deployed statically (Vercel/Cloudflare), use Global Real CounterAPI
-        if (!realVisits) {
+        async function initCounter() {
+            let deltaCount = 0;
+
+            // 1. Try local Flask backend API
             try {
-                const res = await fetch('https://api.counterapi.dev/v1/natgea-thnaweya-2026-egypt/visits/up');
+                const res = await fetch('/api/visitor_count');
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && data.count) {
-                        realVisits = BASE_OFFSET + data.count;
+                    if (data && typeof data.count === 'number') {
+                        deltaCount = data.count;
                     }
                 }
             } catch (e) {}
-        }
 
-        // 3. Fallback to LocalStorage tracking
-        if (!realVisits) {
-            let localCount = parseInt(localStorage.getItem('real_visit_count_15m') || "1");
-            if (!sessionStorage.getItem('session_visited')) {
-                localCount += 1;
-                localStorage.setItem('real_visit_count_15m', localCount.toString());
-                sessionStorage.setItem('session_visited', 'true');
+            // 2. If online static host (Cloudflare/Vercel), try real public CounterAPI
+            if (!deltaCount) {
+                try {
+                    const res = await fetch('https://api.counterapi.dev/v1/natgea-thnaweya-2026-egypt/visits/up');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && typeof data.count === 'number') {
+                            deltaCount = data.count;
+                        }
+                    }
+                } catch (e) {}
             }
-            realVisits = BASE_OFFSET + localCount;
+
+            // 3. Fallback to LocalStorage tracking
+            if (!deltaCount) {
+                let localDelta = parseInt(localStorage.getItem('real_visit_delta') || "1");
+                if (!sessionStorage.getItem('session_visited_flag')) {
+                    localDelta += 1;
+                    localStorage.setItem('real_visit_delta', localDelta.toString());
+                    sessionStorage.setItem('session_visited_flag', 'true');
+                }
+                deltaCount = localDelta;
+            }
+
+            const finalCount = BASE_OFFSET + deltaCount;
+            setUI(finalCount);
         }
 
-        // Update UI elements with exact real count
-        const formatted = Number(realVisits).toLocaleString('ar-EG');
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.visit-count-val').forEach(el => {
-                el.textContent = formatted;
-            });
-        });
+        // Set initial baseline immediately
+        setUI(BASE_OFFSET + 1);
+        initCounter();
     })();
 </script>
+
+
 
 
 
@@ -585,7 +605,7 @@
                 </div>
             </div>
             <div class="header-actions">
-                <div class="visitor-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(212,163,115,0.12);border:1px solid var(--bg-card-border);font-size:0.78rem;font-weight:700;color:var(--text-muted);">👁️ <span class="visit-count-val" style="color:var(--primary);font-weight:900;">1</span> زيارة</div>
+                <div class="visitor-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(212,163,115,0.12);border:1px solid var(--bg-card-border);font-size:0.78rem;font-weight:700;color:var(--text-muted);">👁️ <span class="visit-count-val" style="color:var(--primary);font-weight:900;">١,٥٤٢,٨٩١</span> زيارة</div>
                 <button id="themeToggle" class="icon-btn" title="تبديل المظهر">🌙</button>
                 <a href="index.html" class="btn btn-outline">🔍 استعلام نتيجة</a>
             </div>
