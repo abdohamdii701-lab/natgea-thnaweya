@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 import sqlite3
 import os
 import zipfile
 import re
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, static_folder='static', template_folder=BASE_DIR)
 
 IS_VERCEL = os.environ.get('VERCEL') == '1' or 'VERCEL' in os.environ
 
@@ -46,7 +46,19 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return send_from_directory(BASE_DIR, 'index.html')
+
+@app.route('/index.html')
+def index_file():
+    return send_from_directory(BASE_DIR, 'index.html')
+
+@app.route('/analytics.html')
+def analytics():
+    return send_from_directory(BASE_DIR, 'analytics.html')
+
+@app.route('/predictions.html')
+def predictions():
+    return send_from_directory(BASE_DIR, 'predictions.html')
 
 @app.route('/api/search', methods=['GET'])
 def search():
@@ -160,4 +172,4 @@ def stats():
 
 if __name__ == '__main__':
     print("Starting Natega Web Server on http://localhost:5000")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>توقعات تنسيق الثانوية العامة 2026 | دليل الكليات الشامل</title>
+    <meta name="description" content="توقعات تنسيق الكليات والمعاهد الحكومية 2026 بالدرجات والنسبة المئوية لكل شعبة. استعلام الكليات المتوقعة برقم الجلوس.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/style.css">
+
+    <style>
+        .pred-main { padding-bottom: 4rem; }
+        
+        .pred-hero {
+            padding: 2.5rem 0 1.5rem;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 30px;
+            background: rgba(212,163,115,0.13);
+            color: var(--primary);
+            border: 1px solid rgba(212,163,115,0.28);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+        }
+        .pred-hero h2 {
+            font-size: clamp(1.6rem, 5vw, 2.6rem);
+            font-weight: 900;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+        .pred-hero h2 span { color: var(--primary); }
+        .pred-hero p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        /* ── Score Checker Calculator Section ── */
+        .calc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-lg);
+            padding: 1.8rem;
+            box-shadow: var(--shadow-subtle);
+            margin: 1.8rem 0 2.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .calc-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--emerald), var(--primary), var(--gold));
+        }
+        .calc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+        .calc-header-info { display: flex; align-items: center; gap: 0.8rem; }
+        .calc-icon { font-size: 2rem; }
+        .calc-title { font-size: 1.15rem; font-weight: 800; }
+        .calc-subtitle { font-size: 0.82rem; color: var(--text-muted); }
+
+        .mode-toggle-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--bg-card-border);
+            background: rgba(0,0,0,0.15);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .mode-toggle-btn:hover { background: rgba(212,163,115,0.15); }
+
+        .calc-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr 140px;
+            gap: 1rem;
+            align-items: end;
+        }
+        @media (max-width: 700px) { .calc-form { grid-template-columns: 1fr; } }
+
+        .input-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .styled-input, .styled-select {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--bg-card-border);
+            background: rgba(0,0,0,0.2);
+            color: var(--text-main);
+            font-family: var(--font-primary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            outline: none;
+            transition: var(--transition);
+        }
+        .styled-input:focus, .styled-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .calc-btn {
+            height: 46px;
+            border-radius: var(--radius-md);
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            font-family: var(--font-primary);
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        /* Student Banner */
+        .student-banner {
+            margin-top: 1.2rem;
+            padding: 1rem 1.2rem;
+            border-radius: var(--radius-md);
+            background: rgba(88,129,87,0.12);
+            border: 1px solid rgba(88,129,87,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            animation: fadeIn 0.4s ease;
+        }
+        .st-info-group { display: flex; align-items: center; gap: 0.8rem; }
+        .st-avatar { font-size: 1.6rem; }
+        .st-name { font-size: 1rem; font-weight: 800; color: var(--text-main); }
+        .st-meta { font-size: 0.82rem; color: var(--text-muted); }
+        .st-score-tag {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--emerald);
+            background: rgba(0,0,0,0.2);
+            padding: 4px 14px;
+            border-radius: 20px;
+        }
+
+        /* Eligibility Result Tabs */
+        .eligibility-tabs {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .el-tab {
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            border: 1px solid var(--bg-card-border);
+            background: rgba(0,0,0,0.15);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .el-tab.active[data-type="available"] {
+            border-color: var(--emerald); color: var(--emerald); background: rgba(88,129,87,0.15);
+        }
+        .el-tab.active[data-type="close"] {
+            border-color: var(--gold); color: var(--gold); background: rgba(230,197,148,0.15);
+        }
+        .el-tab.active[data-type="higher"] {
+            border-color: #e07070; color: #e07070; background: rgba(180,80,80,0.15);
+        }
+
+        /* ── Directory Filters Section ── */
+        .dir-controls {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-md);
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .dir-search-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 0.8rem;
+        }
+        @media (max-width: 768px) { .dir-search-row { grid-template-columns: 1fr; } }
+
+        .track-pills {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .pill-btn {
+            padding: 7px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--bg-card-border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .pill-btn.active {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(212,163,115,0.12);
+        }
+
+        /* ── Results Table ── */
+        .table-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--bg-card-border);
+            backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-subtle);
+        }
+        .pred-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+        .pred-table th {
+            background: rgba(0,0,0,0.25);
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--bg-card-border);
+        }
+        .pred-table td {
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: var(--text-main);
+        }
+        .pred-table tr:hover { background: rgba(255,255,255,0.03); }
+
+        .col-name { font-weight: 700; }
+        .score-val { font-weight: 900; color: var(--primary); font-size: 0.98rem; }
+        .trend-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .trend-up { background: rgba(88,129,87,0.15); color: var(--emerald); border: 1px solid rgba(88,129,87,0.3); }
+        .trend-down { background: rgba(180,80,80,0.15); color: #e07070; border: 1px solid rgba(180,80,80,0.3); }
+        .trend-flat { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+
+        /* Pagination */
+        .pagination-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-info { font-size: 0.82rem; color: var(--text-muted); }
+        .page-btns { display: flex; gap: 0.4rem; }
+        .pg-btn {
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--bg-card-border);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .pg-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+        .pg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        body { background-color: var(--bg-dark); }
+    </style>
+</head>
+<body class="light-theme">
+    <div class="glow-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="main-header">
+        <div class="container header-content">
+            <div class="logo">
+                <div class="logo-icon">🎯</div>
+                <div class="logo-text">
+                    <h1>توقعات التنسيق <span>2026</span></h1>
+                    <p class="subtitle">محاكاة إحصائية دقيقة لمجموع القبول بالقاعات والجغرافي</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button id="themeToggle" class="icon-btn" title="تبديل المظهر">🌙</button>
+                <a href="index.html" class="btn btn-outline" style="font-size:0.85rem;">🔍 استعلام نتيجة</a>
+                <a href="analytics.html" class="btn btn-outline" style="font-size:0.85rem;">📊 إحصائيات</a>
+                <a href="predictions.html" class="btn btn-primary" style="font-size:0.85rem;">🎯 توقعات التنسيق</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container pred-main">
+        <!-- Hero Section -->
+        <section class="pred-hero">
+            <div class="hero-badge">
+                🎯 استعلام كلياتك المتوقعة برقم الجلوس لـ 1,689 كلية ومعهد
+            </div>
+            <h2>توقعات الحدود الدنيا <span>لكليات ومعاهد مصر 2026</span></h2>
+            <p>أدخل رقم جلوسك ليقوم النظام بجلب نتيجتك وتحديد الكليات المتاحة لك فوراً وفقاً لتراكمات السعة الاستيعابية</p>
+        </section>
+
+        <!-- Score / Seating Checker Calculator -->
+        <section class="calc-card">
+            <div class="calc-header">
+                <div class="calc-header-info">
+                    <div class="calc-icon">💳</div>
+                    <div>
+                        <h3 class="calc-title" id="calcTitleText">فحص الكليات المتوقعة برقم الجلوس</h3>
+                        <p class="calc-subtitle" id="calcSubtitleText">أدخل رقم جلوسك لجلب مجموعك التلقائي وعرض الكليات المتاحة فوراً</p>
+                    </div>
+                </div>
+                <button type="button" id="toggleModeBtn" class="mode-toggle-btn">🔢 إدخال المجموع يدوياً بدلاً من رقم الجلوس</button>
+            </div>
+
+            <div class="calc-form">
+                <div class="input-group">
+                    <label id="inputLabelText">أدخل رقم الجلوس (مثال: 2001970)</label>
+                    <input type="text" id="userInput" class="styled-input" placeholder="مثال: 2001970" autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <label>الشعبة (تُحدد تلقائياً مع رقم الجلوس)</label>
+                    <select id="userTrack" class="styled-select">
+                        <option value="all">كل الشعب</option>
+                        <option value="science_bio">🔬 علمي علوم</option>
+                        <option value="science_math">📐 علمي رياضة</option>
+                        <option value="literary">📚 أدبي</option>
+                    </select>
+                </div>
+                <button type="button" id="checkBtn" class="calc-btn">
+                    <span>🎯 فحص الكليات</span>
+                </button>
+            </div>
+
+            <!-- Student Data Banner -->
+            <div id="studentBanner" class="student-banner" style="display: none;">
+                <div class="st-info-group">
+                    <div class="st-avatar">👨‍🎓</div>
+                    <div>
+                        <div class="st-name" id="stName">اسم الطالب</div>
+                        <div class="st-meta">رقم الجلوس: <span id="stSeating">000000</span> | الشعبة: <span id="stBranch">علمي علوم</span></div>
+                    </div>
+                </div>
+                <div class="st-score-tag" id="stScore">000 / 320 (00.0%)</div>
+            </div>
+
+            <div id="eligibilityTabsWrap" class="eligibility-tabs" style="display: none;">
+                <button class="el-tab active" data-type="available" onclick="filterEligibility('available')">🟢 كليات متاحة فوراً لمجموعك (<span id="cntAvailable">0</span>)</button>
+                <button class="el-tab" data-type="close" onclick="filterEligibility('close')">🟡 كليات على الحافة ± 3 درجات (<span id="cntClose">0</span>)</button>
+                <button class="el-tab" data-type="higher" onclick="filterEligibility('higher')">🔴 كليات أعلى من مجموعك (<span id="cntHigher">0</span>)</button>
+            </div>
+        </section>
+
+        <!-- Directory Controls -->
+        <section class="dir-controls">
+            <div class="dir-search-row">
+                <input type="text" id="searchBox" class="styled-input" placeholder="🔍 ابحث عن اسم كلية أو جامعة (مثال: طب القاهرة، هندسة المنصورة)...">
+                
+                <select id="sectorFilter" class="styled-select">
+                    <option value="all">جميع القطاعات والتخصصات</option>
+                    <option value="الطب البشري">الطب البشري</option>
+                    <option value="طب الأسنان">طب الأسنان</option>
+                    <option value="العلاج الطبيعي">العلاج الطبيعي</option>
+                    <option value="الصيدلة">الصيدلة</option>
+                    <option value="الطب البيطري">الطب البيطري</option>
+                    <option value="الهندسة">الهندسة</option>
+                    <option value="حاسبات ومعلومات (رياضة)">حاسبات ومعلومات (رياضة)</option>
+                    <option value="حاسبات ومعلومات (علوم)">حاسبات ومعلومات (علوم)</option>
+                    <option value="الاقتصاد والعلوم السياسية">الاقتصاد والعلوم السياسية</option>
+                    <option value="الألسن">الألسن</option>
+                    <option value="الإعلام">الإعلام</option>
+                    <option value="الآثار">الآثار</option>
+                    <option value="التربية">التربية</option>
+                    <option value="التجارة">التجارة</option>
+                    <option value="الآداب والحقوق">الآداب والحقوق</option>
+                    <option value="كلية التمريض">كلية التمريض</option>
+                </select>
+
+                <select id="sortFilter" class="styled-select">
+                    <option value="desc">الترتيب: من الأعلى مجموعاً</option>
+                    <option value="asc">الترتيب: من الأقل مجموعاً</option>
+                    <option value="diff_desc">الأعلى ارتفاعاً</option>
+                    <option value="diff_asc">الأكثر انخفاضاً</option>
+                </select>
+            </div>
+
+            <div class="track-pills">
+                <button class="pill-btn active" data-track="all" onclick="filterTrack('all', this)">🌐 جميع الشعب</button>
+                <button class="pill-btn" data-track="science_bio" onclick="filterTrack('science_bio', this)">🔬 علمي علوم</button>
+                <button class="pill-btn" data-track="science_math" onclick="filterTrack('science_math', this)">📐 علمي رياضة</button>
+                <button class="pill-btn" data-track="literary" onclick="filterTrack('literary', this)">📚 أدبي</button>
+            </div>
+        </section>
+
+        <!-- Directory Table -->
+        <div class="table-wrap">
+            <table class="pred-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الكلية / المعهد</th>
+                        <th>الشعبة</th>
+                        <th>مجموع 2025</th>
+                        <th>المجموع المتوقع 2026</th>
+                        <th>التغير بالدرجات</th>
+                        <th>النسبة المتوقعة</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-wrap">
+            <div class="page-info">عرض <span id="showingStart">0</span> إلى <span id="showingEnd">0</span> من إجمالي <span id="totalColleges">0</span> كلية ومعهد</div>
+            <div class="page-btns">
+                <button id="prevBtn" class="pg-btn" onclick="changePage(-1)">السابق</button>
+                <span id="pageNum" style="font-size:0.85rem; font-weight:800; align-self:center;">1</span>
+                <button id="nextBtn" class="pg-btn" onclick="changePage(1)">التالي</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const pageSize = 40;
+
+        let activeTrack = 'all';
+        let activeEligibility = 'all';
+        let userScoreValue = null;
+        let isSeatingMode = true; // Default mode: Seating Number
+
+        // Theme toggle
+        function applyTheme(dark) {
+            document.body.classList.toggle('light-theme', !dark);
+            document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙';
+        }
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const isLight = document.body.classList.contains('light-theme');
+            applyTheme(isLight);
+            localStorage.setItem('theme', isLight ? 'dark' : 'light');
+        });
+        (function() {
+            const saved = localStorage.getItem('theme');
+            applyTheme(saved === 'dark');
+        })();
+
+        // Fetch predictions.json
+        fetch('static/data/predictions.json')
+            .then(res => res.json())
+            .then(data => {
+                allData = data;
+                applyFilters();
+            })
+            .catch(err => {
+                console.error("Failed to load predictions.json", err);
+            });
+
+        // Toggle Seating vs Score Mode
+        document.getElementById('toggleModeBtn').addEventListener('click', () => {
+            isSeatingMode = !isSeatingMode;
+            const inputLabel = document.getElementById('inputLabelText');
+            const userInput = document.getElementById('userInput');
+            const calcTitle = document.getElementById('calcTitleText');
+            const calcSubtitle = document.getElementById('calcSubtitleText');
+            const toggleBtn = document.getElementById('toggleModeBtn');
+
+            if (isSeatingMode) {
+                calcTitle.textContent = "فحص الكليات المتوقعة برقم الجلوس";
+                calcSubtitle.textContent = "أدخل رقم جلوسك لجلب مجموعك التلقائي وعرض الكليات المتاحة فوراً";
+                inputLabel.textContent = "أدخل رقم الجلوس (مثال: 2001970)";
+                userInput.placeholder = "مثال: 2001970";
+                userInput.type = "text";
+                toggleBtn.textContent = "🔢 إدخال المجموع يدوياً بدلاً من رقم الجلوس";
+            } else {
+                calcTitle.textContent = "فحص الكليات المتوقعة بالمجموع يدوياً";
+                calcSubtitle.textContent = "أدخل مجموعك بالدرجات لمعرفة الكليات المتاحة لك فوراً";
+                inputLabel.textContent = "أدخل مجموعك بالدرجات (من 320)";
+                userInput.placeholder = "مثال: 295.5";
+                userInput.type = "number";
+                toggleBtn.textContent = "💳 إدخال رقم الجلوس لطلب المجموع تلقائياً";
+            }
+            userInput.value = '';
+            document.getElementById('studentBanner').style.display = 'none';
+        });
+
+        // Check Button Execution
+        document.getElementById('checkBtn').addEventListener('click', async () => {
+            const userInputVal = document.getElementById('userInput').value.trim();
+            const trackSelect = document.getElementById('userTrack').value;
+
+            if (!userInputVal) {
+                alert(isSeatingMode ? "يرجى كتابة رقم الجلوس!" : "يرجى كتابة المجموع بالدرجات!");
+                return;
+            }
+
+            if (isSeatingMode) {
+                // Seating Number Search
+                const seatingNo = userInputVal;
+                const chunkKey = Math.floor(parseInt(seatingNo) / 5000) * 5000;
+                let foundStudent = null;
+
+                try {
+                    const res = await fetch(`static/data/seating/${chunkKey}.json`);
+                    if (res.ok) {
+                        const chunkData = await res.json();
+                        if (chunkData[seatingNo]) {
+                            const st = chunkData[seatingNo];
+                            foundStudent = {
+                                seating_no: seatingNo,
+                                name: st.n,
+                                score: st.d,
+                                branch: st.b,
+                                percentage: st.p
+                            };
+                        }
+                    }
+                } catch (e) {
+                    console.log('Error fetching seating JSON');
+                }
+
+                if (foundStudent) {
+                    userScoreValue = foundStudent.score;
+                    
+                    // Auto detect track
+                    const b = foundStudent.branch || '';
+                    if (b.includes('علوم')) activeTrack = 'science_bio';
+                    else if (b.includes('رياض')) activeTrack = 'science_math';
+                    else if (b.includes('أدب') || b.includes('ادب')) activeTrack = 'literary';
+
+                    document.getElementById('userTrack').value = activeTrack;
+
+                    // Display Student Banner
+                    document.getElementById('stName').textContent = foundStudent.name;
+                    document.getElementById('stSeating').textContent = foundStudent.seating_no;
+                    document.getElementById('stBranch').textContent = foundStudent.branch;
+                    document.getElementById('stScore').textContent = `${foundStudent.score} / 320 (%${foundStudent.percentage})`;
+                    document.getElementById('studentBanner').style.display = 'flex';
+                } else {
+                    alert(`لم نتمكن من العثور على طالب برقم الجلوس: "${seatingNo}". يمكن النقر على زر الإدخال اليدوي للمجموع.`);
+                    return;
+                }
+            } else {
+                // Manual Score Mode
+                userScoreValue = parseFloat(userInputVal);
+                if (isNaN(userScoreValue) || userScoreValue < 0 || userScoreValue > 320) {
+                    alert("يرجى إدخال مجموع صحيح بين 0 و 320!");
+                    return;
+                }
+                if (trackSelect !== 'all') {
+                    activeTrack = trackSelect;
+                }
+                document.getElementById('studentBanner').style.display = 'none';
+            }
+
+            // Sync track pills
+            document.querySelectorAll('.pill-btn').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('data-track') === activeTrack);
+            });
+
+            // Calculate Counts
+            const baseCols = allData.filter(col => activeTrack === 'all' || col.track === activeTrack);
+            let cntAvail = 0, cntClose = 0, cntHigh = 0;
+
+            baseCols.forEach(col => {
+                const diff = userScoreValue - col.predicted_score;
+                if (diff >= 0) cntAvail++;
+                if (diff >= -3 && diff <= 3) cntClose++;
+                if (diff < 0) cntHigh++;
+            });
+
+            document.getElementById('cntAvailable').textContent = cntAvail.toLocaleString('ar-EG');
+            document.getElementById('cntClose').textContent = cntClose.toLocaleString('ar-EG');
+            document.getElementById('cntHigher').textContent = cntHigh.toLocaleString('ar-EG');
+
+            document.getElementById('eligibilityTabsWrap').style.display = 'flex';
+            activeEligibility = 'available';
+
+            document.querySelectorAll('.el-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.el-tab[data-type="available"]').classList.add('active');
+
+            applyFilters();
+        });
+
+        function filterTrack(tr, btn) {
+            activeTrack = tr;
+            document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('searchBox').value.trim().toLowerCase();
+            const sector = document.getElementById('sectorFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+
+            filteredData = allData.filter(col => {
+                // Track
+                if (activeTrack !== 'all' && col.track !== activeTrack) return false;
+                
+                // Sector
+                if (sector !== 'all' && col.sector !== sector) return false;
+
+                // Query
+                if (query && !col.name.toLowerCase().includes(query)) return false;
+
+                // Eligibility
+                if (activeEligibility !== 'all' && userScoreValue !== null) {
+                    const diff = userScoreValue - col.predicted_score;
+                    if (activeEligibility === 'available' && diff < 0) return false;
+                    if (activeEligibility === 'close' && (diff < -3 || diff > 3)) return false;
+                    if (activeEligibility === 'higher' && diff >= 0) return false;
+                }
+
+                return true;
+            });
+
+            // Sorting
+            filteredData.sort((a, b) => {
+                if (sort === 'desc') return b.predicted_score - a.predicted_score;
+                if (sort === 'asc') return a.predicted_score - b.predicted_score;
+                if (sort === 'diff_desc') return b.delta - a.delta;
+                if (sort === 'diff_asc') return a.delta - b.delta;
+                return 0;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            const total = filteredData.length;
+            document.getElementById('totalColleges').textContent = total.toLocaleString('ar-EG');
+
+            if (total === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:2rem; color:var(--text-muted);">لا توجد نتائج مطابقة لخيارات البحث!</td></tr>`;
+                document.getElementById('showingStart').textContent = '0';
+                document.getElementById('showingEnd').textContent = '0';
+                document.getElementById('prevBtn').disabled = true;
+                document.getElementById('nextBtn').disabled = true;
+                return;
+            }
+
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = Math.min(startIdx + pageSize, total);
+            const pageItems = filteredData.slice(startIdx, endIdx);
+
+            document.getElementById('showingStart').textContent = (startIdx + 1).toLocaleString('ar-EG');
+            document.getElementById('showingEnd').textContent = endIdx.toLocaleString('ar-EG');
+            document.getElementById('pageNum').textContent = currentPage.toLocaleString('ar-EG');
+
+            document.getElementById('prevBtn').disabled = (currentPage === 1);
+            document.getElementById('nextBtn').disabled = (endIdx >= total);
+
+            pageItems.forEach((col, idx) => {
+                const tr = document.createElement('tr');
+                
+                const d = col.delta;
+                let trendHtml = '';
+                if (d > 0) trendHtml = `<span class="trend-badge trend-up">📈 +${d}</span>`;
+                else if (d < 0) trendHtml = `<span class="trend-badge trend-down">📉 ${d}</span>`;
+                else trendHtml = `<span class="trend-badge trend-flat">➖ 0</span>`;
+
+                tr.innerHTML = `
+                    <td>${(startIdx + idx + 1).toLocaleString('ar-EG')}</td>
+                    <td class="col-name">${col.name}</td>
+                    <td><span style="font-size:0.78rem; font-weight:700;">${col.track_name}</span></td>
+                    <td>${col.score_2025}</td>
+                    <td class="score-val">${col.predicted_score}</td>
+                    <td>${trendHtml}</td>
+                    <td><strong style="color:var(--primary);">%${col.percentage.toFixed(2)}</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function changePage(dir) {
+            currentPage += dir;
+            renderTable();
+            window.scrollTo({ top: 400, behavior: 'smooth' });
+        }
+
+        function filterEligibility(type) {
+            activeEligibility = type;
+            document.querySelectorAll('.el-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.el-tab[data-type="${type}"]`).classList.add('active');
+            applyFilters();
+        }
+
+        document.getElementById('searchBox').addEventListener('input', applyFilters);
+        document.getElementById('sectorFilter').addEventListener('change', applyFilters);
+        document.getElementById('sortFilter').addEventListener('change', applyFilters);
+    </script>
+</body>
+</html>
