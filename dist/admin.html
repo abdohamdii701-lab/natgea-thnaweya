@@ -29,7 +29,7 @@
         .admin-title h2 { font-size: 1.6rem; font-weight: 900; }
 
         .auth-card {
-            max-width: 420px;
+            max-width: 440px;
             margin: 4rem auto;
             background: var(--bg-card);
             border: 1px solid var(--bg-card-border);
@@ -41,6 +41,18 @@
         }
         .auth-card h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 0.6rem; }
         .auth-card p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+        .cors-notice {
+            margin-top: 1.2rem;
+            padding: 0.9rem;
+            border-radius: var(--radius-md);
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            font-size: 0.82rem;
+            text-align: right;
+            line-height: 1.5;
+        }
 
         /* Overview Grid */
         .admin-stats-grid {
@@ -162,7 +174,7 @@
 
     <main class="container admin-main">
 
-        <!-- Password Auth Section (Clean Single Password Prompt) -->
+        <!-- Password Auth Section -->
         <div id="authSection" class="auth-card">
             <div style="font-size:3.2rem; margin-bottom:0.6rem;">🔐</div>
             <h3>تسجيل دخول لوحة الإدارة</h3>
@@ -175,6 +187,13 @@
 
                 <button type="submit" class="btn btn-primary" style="justify-content:center; padding:12px; font-size:0.95rem;">🔓 دخول اللوحة</button>
             </form>
+
+            <div id="corsNotice" class="cors-notice" style="display: none;">
+                ⚠️ <strong>تنبيه اتصال (CORS):</strong><br>
+                استضافة GitHub Pages لا تملك خادم بايثون لـ <code>app.py</code>.<br>
+                • لرؤية البيانات على جهازك: افتح <a href="http://localhost:5000/admin.html" target="_blank" style="color:#ef4444; font-weight:800; text-decoration:underline;">http://localhost:5000/admin.html</a>.<br>
+                • أو ارفع المشروع على Vercel ليعمل الرابط أونلاين مجاناً!
+            </div>
         </div>
 
         <!-- Dashboard Content Section -->
@@ -271,20 +290,6 @@
 
         document.getElementById('adminKeyInput').value = adminKey;
 
-        // Smart Automatic Backend Detection (No Manual Input Required)
-        function getBackendBaseUrl() {
-            const host = window.location.hostname;
-
-            if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') {
-                return 'http://localhost:5000';
-            }
-            if (host.includes('vercel.app')) {
-                return ''; // Relative path on Vercel
-            }
-            // Fallback for GitHub Pages and Cloudflare Pages
-            return 'https://natgea-thnaweya.abdohamdii701.workers.dev';
-        }
-
         // Theme toggle
         function applyTheme(dark) {
             document.body.classList.toggle('light-theme', !dark);
@@ -331,31 +336,56 @@
             }, 1000);
         }
 
+        // Multi-Endpoint Fallback Strategy (Localhost, Relative, Cloudflare/Vercel)
         async function fetchDashboardData() {
-            const baseUrl = getBackendBaseUrl();
-            const endpoint = `${baseUrl}/api/admin/logs?key=${encodeURIComponent(adminKey)}&_t=${Date.now()}`;
+            const keyParam = encodeURIComponent(adminKey);
+            const ts = Date.now();
+            
+            const candidateEndpoints = [
+                `/api/admin/logs?key=${keyParam}&_t=${ts}`,
+                `http://localhost:5000/api/admin/logs?key=${keyParam}&_t=${ts}`,
+                `http://127.0.0.1:5000/api/admin/logs?key=${keyParam}&_t=${ts}`
+            ];
 
-            try {
-                const res = await fetch(endpoint);
-                if (res.status === 401 || res.status === 403) {
-                    document.getElementById('authSection').style.display = 'block';
-                    document.getElementById('dashboardSection').style.display = 'none';
-                    alert('كلمة السر غير صحيحة!');
-                    return;
-                }
+            let success = false;
+            let isAuthError = false;
 
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById('authSection').style.display = 'none';
-                    document.getElementById('dashboardSection').style.display = 'block';
-                    renderDashboard(data);
-                    
-                    if (isAutoRefresh && !timerInterval) {
-                        startCountdown();
+            for (const ep of candidateEndpoints) {
+                try {
+                    const res = await fetch(ep);
+                    if (res.status === 401 || res.status === 403) {
+                        isAuthError = true;
+                        break;
                     }
+                    if (res.ok) {
+                        const data = await res.json();
+                        document.getElementById('authSection').style.display = 'none';
+                        document.getElementById('dashboardSection').style.display = 'block';
+                        document.getElementById('corsNotice').style.display = 'none';
+                        renderDashboard(data);
+                        success = true;
+                        
+                        if (isAutoRefresh && !timerInterval) {
+                            startCountdown();
+                        }
+                        break;
+                    }
+                } catch (e) {
+                    // Try next endpoint
                 }
-            } catch (e) {
-                console.error("Dashboard fetch error", e);
+            }
+
+            if (isAuthError) {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('dashboardSection').style.display = 'none';
+                alert('كلمة السر غير صحيحة!');
+                return;
+            }
+
+            if (!success) {
+                document.getElementById('authSection').style.display = 'block';
+                document.getElementById('dashboardSection').style.display = 'none';
+                document.getElementById('corsNotice').style.display = 'block';
             }
         }
 

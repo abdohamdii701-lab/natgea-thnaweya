@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+admin_html_cors_fixed = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -450,3 +452,11 @@
     </script>
 </body>
 </html>
+"""
+
+locations = ['admin.html', 'dist/admin.html']
+for loc in locations:
+    with open(loc, 'w', encoding='utf-8') as f:
+        f.write(admin_html_cors_fixed)
+
+print("Updated admin.html in root and dist with robust CORS multi-endpoint fallback strategy.")
