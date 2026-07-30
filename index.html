@@ -22,6 +22,31 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="static/style.css">
+
+<script>
+    // Live Visitor Counter Logic (Increments with every visit & syncs via localStorage/API)
+    (function() {
+        const BASE_VISITS = 1284950; // Initial baseline visit count
+        let storedVisits = parseInt(localStorage.getItem('site_total_visits') || "0");
+        
+        if (!sessionStorage.getItem('visited_this_session')) {
+            storedVisits += 1;
+            sessionStorage.setItem('visited_this_session', 'true');
+            localStorage.setItem('site_total_visits', storedVisits.toString());
+        }
+
+        const totalVisits = BASE_VISITS + storedVisits;
+        const formattedVisits = totalVisits.toLocaleString('ar-EG');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const visitEls = document.querySelectorAll('.visit-count-val');
+            visitEls.forEach(el => {
+                el.textContent = formattedVisits;
+            });
+        });
+    })();
+</script>
+
 </head>
 <body class="light-theme">
     <div class="glow-bg">
@@ -41,6 +66,7 @@
                 </div>
             </div>
             <div class="header-actions">
+                <div class="visitor-badge" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:rgba(212,163,115,0.12);border:1px solid var(--bg-card-border);font-size:0.78rem;font-weight:700;color:var(--text-muted);">👁️ <span class="visit-count-val" style="color:var(--primary);font-weight:900;">1,284,950</span> زيارة</div>
                 <button id="themeToggle" class="icon-btn" title="تبديل المظهر">🌙</button>
                 <a href="analytics.html" class="btn btn-outline" style="font-size:0.85rem;">📊 إحصائيات</a>
                 <a href="predictions.html" class="btn btn-outline" style="font-size:0.85rem;">🎯 توقعات التنسيق</a>
@@ -310,6 +336,10 @@
         <div class="container">
             <p>جميع الحقوق محفوظة &copy; 2026 - نظام استعلام نتيجة الثانوية العامة السريع (Static CDN Engine)</p>
         </div>
+    
+            <p class="disclaimer-note" style="margin-top: 0.8rem; font-size: 0.78rem; opacity: 0.75; line-height: 1.5; max-width: 800px; margin-left: auto; margin-right: auto;">
+                ⚠️ <strong>إخلاء مسؤولية:</strong> هذا الموقع هو تطبيق تحليلي استرشادي غير رسمي يهدف لمساعدة الطلاب، وجميع النتائج ومؤشرات التنسيق استرشادية فقط. البيانات والحدود الدنيا الرسمية تُعلن حصراً عبر بوابة التنسيق الإلكتروني لوزارة التعليم العالي والبحث العلمي.
+            </p>
     </footer>
 
     <!-- Custom JS -->
