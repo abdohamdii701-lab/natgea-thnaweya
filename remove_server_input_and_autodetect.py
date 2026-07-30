@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+import os
+
+admin_html_sleek = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -420,3 +422,11 @@
     </script>
 </body>
 </html>
+"""
+
+locations = ['admin.html', 'dist/admin.html']
+for loc in locations:
+    with open(loc, 'w', encoding='utf-8') as f:
+        f.write(admin_html_sleek)
+
+print("Updated admin.html in root and dist with smart automatic backend detection and single password input.")
